@@ -16,7 +16,7 @@ linters:
     # - godox
     - gofmt
     - goimports
-    - revive
+    - golint
     - gosec
     - gosimple
     - govet
@@ -24,6 +24,7 @@ linters:
     # - interfacer
     - lll
     - misspell
+    - maligned
     - nakedret
     - prealloc
     # - scopelint
@@ -39,13 +40,6 @@ linters:
     # - wsl
     # - gocognit
     - nolintlint
-
-run:
-  build-tags:
-    - cleveldb
-    - rocksdb
-    - badgerdb
-    - boltdb
 
 issues:
   exclude-rules:

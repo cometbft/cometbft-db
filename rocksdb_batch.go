@@ -1,9 +1,8 @@
-//go:build rocksdb
 // +build rocksdb
 
 package db
 
-import "github.com/cosmos/gorocksdb"
+import "github.com/tecbot/gorocksdb"
 
 type rocksDBBatch struct {
 	db    *RocksDB
