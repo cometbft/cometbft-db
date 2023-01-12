@@ -95,7 +95,11 @@ func (db *RocksDB) Set(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	return db.db.Put(db.wo, key, value)
+	err := db.db.Put(db.wo, key, value)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // SetSync implements DB.
@@ -106,7 +110,11 @@ func (db *RocksDB) SetSync(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	return db.db.Put(db.woSync, key, value)
+	err := db.db.Put(db.woSync, key, value)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Delete implements DB.
@@ -114,7 +122,11 @@ func (db *RocksDB) Delete(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	return db.db.Delete(db.wo, key)
+	err := db.db.Delete(db.wo, key)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeleteSync implements DB.
@@ -122,7 +134,11 @@ func (db *RocksDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	return db.db.Delete(db.woSync, key)
+	err := db.db.Delete(db.woSync, key)
+	if err != nil {
+		return nil
+	}
+	return nil
 }
 
 func (db *RocksDB) DB() *gorocksdb.DB {
