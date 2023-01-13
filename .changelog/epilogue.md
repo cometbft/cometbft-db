@@ -1,0 +1,1 @@
+For previous changes, released before the creation of the CometBFT-DB repository, please refer to the previous [CHANGELOG.md](https://github.com/cometbft/cometbft-db/blob/e09e4d6c10707403a608cfe3f15171a8cda8db66/CHANGELOG.md) file.
