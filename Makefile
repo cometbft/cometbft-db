@@ -76,7 +76,6 @@ docker-test: docker-test-image
 		-v `pwd`:/cometbft \
 		-w /cometbft \
 		--entrypoint "" \
-		-e "CGO_ENABLED=1" \
 		$(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) \
 		make test-all-with-coverage
 .PHONY: docker-test
