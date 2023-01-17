@@ -1,1 +1,3 @@
-For previous changes, released before the creation of the CometBFT-DB repository, please refer to the previous [CHANGELOG.md](https://github.com/cometbft/cometbft-db/blob/e09e4d6c10707403a608cfe3f15171a8cda8db66/CHANGELOG.md) file.
+CometBFT-DB is a fork of [tm-db](https://github.com/tendermint/tm-db) as of v0.6.7.
+
+For changes prior to the creation of this fork, please refer to the upstream [CHANGELOG.md](https://github.com/tendermint/tm-db/blob/774cdfe7e6b0a249b1144998d81a4de7b8037941/CHANGELOG.md) for v0.6.7 and earlier.
