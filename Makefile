@@ -40,6 +40,18 @@ test-all:
 	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,badgerdb -v
 .PHONY: test-all
 
+test-all-with-coverage:
+	@echo "--> Running go test for all databases, with coverage"
+	@CGO_ENABLED=1 go test ./... \
+		-mod=readonly \
+		-timeout 8m \
+		-race \
+		-coverprofile=coverage.txt \
+		-covermode=atomic \
+		-tags=memdb,goleveldb,cleveldb,boltdb,rocksdb,badgerdb \
+		-v
+.PHONY: test-all-with-coverage
+
 lint:
 	@echo "--> Running linter"
 	@golangci-lint run
@@ -56,6 +68,17 @@ docker-test-image:
 	@cd tools && \
 		docker build -t $(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) .
 .PHONY: docker-test-image
+
+# Runs the same test as is executed in CI, but locally.
+docker-test: docker-test-image
+	@echo "--> Running all tests with all databases with Docker"
+	@docker run -it --rm --name cometbft-db-test \
+		-v `pwd`:/cometbft \
+		-w /cometbft \
+		--entrypoint "" \
+		$(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) \
+		make test-all-with-coverage
+.PHONY: docker-test
 
 tools:
 	go get -v $(GOTOOLS)
@@ -84,5 +107,8 @@ clean_certs:
 	## Note the $@ here is substituted for the %.pb.go
 	protoc $(INCLUDE) $< --gogo_out=Mgoogle/protobuf/timestamp.proto=github.com/golang/protobuf/ptypes/timestamp,plugins=grpc:../../..
 
+protoc_remotedb: remotedb/proto/defs.pb.go
 
-protoc_remotedb: remotedb/proto/defs.pb.go	
+vulncheck:
+		@go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+.PHONY: vulncheck
