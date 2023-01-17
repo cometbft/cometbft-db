@@ -7,16 +7,14 @@
 ![Lint](https://github.com/cometbft/cometbft-db/workflows/Lint/badge.svg?branch=main)
 ![Test](https://github.com/cometbft/cometbft-db/workflows/Test/badge.svg?branch=main)
 
-A fork of [tm-db](https://github.com/tendermint/tm-db).
+A fork of [tm-db].
 
 Common database interface for various database backends. Primarily meant for
-applications built on [CometBFT](https://github.com/cometbft/cometbft-db), such
-as the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk).
+applications built on [CometBFT], such as the [Cosmos SDK].
 
-**NB:** As per <https://github.com/cometbft/cometbft/issues/48>, the CometBFT
-team plans on eventually totally deprecating and removing this library from
-CometBFT. As such, we do not recommend depending on this library for new
-projects.
+**NB:** As per [cometbft/cometbft\#48], the CometBFT team plans on eventually
+totally deprecating and removing this library from CometBFT. As such, we do not
+recommend depending on this library for new projects.
 
 ### Minimum Go Version
 
@@ -83,3 +81,8 @@ To test all databases within a Docker container, run:
 ```bash
 make docker-test
 ```
+
+[tm-db]: https://github.com/tendermint/tm-db
+[CometBFT]: https://github.com/cometbft/cometbft-db
+[Cosmos SDK]: https://github.com/cosmos/cosmos-sdk
+[cometbft/cometbft\#48]: https://github.com/cometbft/cometbft/issues/48
