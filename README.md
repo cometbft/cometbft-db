@@ -67,9 +67,9 @@ Go 1.18+
   single application database.
 
 - **RemoteDB [experimental]:** A database that connects to distributed
-  Tendermint db instances via [gRPC](https://grpc.io/). This can help with
+  CometBFT db instances via [gRPC](https://grpc.io/). This can help with
   detaching difficult deployments such as LevelDB, and can also ease dependency
-  management for Tendermint developers.
+  management for CometBFT developers.
 
 ## Tests
 
