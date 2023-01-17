@@ -7,6 +7,8 @@
 ![Lint](https://github.com/cometbft/cometbft-db/workflows/Lint/badge.svg?branch=main)
 ![Test](https://github.com/cometbft/cometbft-db/workflows/Test/badge.svg?branch=main)
 
+A fork of [tm-db](https://github.com/tendermint/tm-db).
+
 Common database interface for various database backends. Primarily meant for
 applications built on [CometBFT](https://github.com/cometbft/cometbft-db), such
 as the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk).
