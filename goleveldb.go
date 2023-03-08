@@ -71,6 +71,8 @@ func (db *GoLevelDB) Set(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
+
+	fmt.Println("DBwrite | goleveldb | keySize | ", len(key), " | valueSize | ", len(value), " |")
 	if err := db.db.Put(key, value, nil); err != nil {
 		return err
 	}
