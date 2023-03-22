@@ -31,7 +31,7 @@ jobs:
         with:
           context: ./tools
           file: ./tools/Dockerfile
-          tags: latest
+          tags: "cometbft/cometbft-db-testing:latest"
           load: true
 
       - name: test & coverage report creation
