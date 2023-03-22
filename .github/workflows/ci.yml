@@ -35,8 +35,8 @@ jobs:
         with:
           context: ./tools
           file: ./tools/Dockerfile
-          push: false
           tags: latest
+          load: true
 
       - name: test & coverage report creation
         run: |
