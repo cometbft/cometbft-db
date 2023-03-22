@@ -39,7 +39,8 @@ jobs:
           tags: latest
 
       - name: test & coverage report creation
-        run: make docker-test
+        run: |
+          NON_INTERACTIVE=1 make docker-test
 
       - uses: codecov/codecov-action@v3
         with:
