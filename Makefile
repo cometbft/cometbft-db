@@ -70,7 +70,7 @@ docker-test-image:
 .PHONY: docker-test-image
 
 # Runs the same test as is executed in CI, but locally.
-docker-test: docker-test-image
+docker-test:
 	@echo "--> Running all tests with all databases with Docker"
 	@docker run -it --rm --name cometbft-db-test \
 		-v `pwd`:/cometbft \
