@@ -1,6 +1,3 @@
-Note: This is a SECURITY.md template for repositories that are part of the HackerOne bug bounty program.
-      Please remove this note and customize the template to your repository.
-
 # Coordinated Vulnerability Disclosure Policy
 
 The Cosmos ecosystem believes that strong security is a blend of highly technical security researchers
