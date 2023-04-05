@@ -20,10 +20,10 @@ Security vulnerabilities should be reported if the vulnerability can be reproduc
 
 | Reporting methods                                                 |
 |-------------------------------------------------------------------|
-| [GitHub Private Vulnerability Reporting](security/advisories/new) |
+| [GitHub Private Vulnerability Reporting](https://github.com/cometbft/cometbft-db/security/advisories/new) |
 | [HackerOne bug bounty program](https://hackerone.com/cosmos)      |
 
-All security vulnerabilities can be reported under GitHub's [Private vulnerability reporting](security/advisories/new) system.
+All security vulnerabilities can be reported under GitHub's [Private vulnerability reporting](https://github.com/cometbft/cometbft-db/security/advisories/new) system.
 This will open a private issue for the developers. Try to fill in as much of the questions as possible. If you are not familiar
 with the CVSS system for assessing vulnerabilities, just use the Low/High/Critical severity ratings. A partially filled in report
 for a critical vulnerability is still better than no report at all.
@@ -52,4 +52,4 @@ If you follow these guidelines when reporting an issue to us, we commit to:
 ### More information
 * See [TIMELINE.md](https://github.com/cosmos/security/blob/main/TIMELINE.md) for an example timeline of a disclosure.
 * See [DISCLOSURE.md](https://github.com/cosmos/security/blob/main/DISCLOSURE.md) to see more into the inner workings of the disclosure process.
-* See [EXAMPLES.md](https://github.com/cosmos/security/EXAMPLES.md) for some of the examples that we are interested in for the bug bounty program.
+* See [EXAMPLES.md](https://github.com/cosmos/security/blob/main/EXAMPLES.md) for some of the examples that we are interested in for the bug bounty program.
