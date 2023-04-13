@@ -1,11 +1,5 @@
 # CHANGELOG
 
-## UNRELEASED
-
-### Dependencies
-
-- Switch rocksdb binding from gorocksdb to grocksdb, update librocksdb dependency to `v7.10.2`, [#42](https://github.com/cometbft/cometbft-db/pull/42).
-
 ## v0.7.0
 
 *Jan 17, 2023*
