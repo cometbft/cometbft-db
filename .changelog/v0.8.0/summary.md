@@ -1,4 +1,4 @@
-*Apr 25, 2023*
+*Apr 26, 2023*
 
 This release bumps the supported version of RocksDB, which requires cometbft-db
 RocksDB users to update their builds (and hence requires a "major" release, but
