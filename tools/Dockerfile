@@ -13,7 +13,10 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-    make tar wget
+    make tar wget build-essential gcc-11 g++-11 
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11 
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11
 
 FROM build AS install
 ARG LEVELDB=1.20
