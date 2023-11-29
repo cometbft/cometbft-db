@@ -3,11 +3,15 @@ package db
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 func init() {
@@ -15,6 +19,54 @@ func init() {
 		return NewGoLevelDB(name, dir)
 	}
 	registerDBCreator(GoLevelDBBackend, dbCreator, false)
+
+	createPrometheusMetrics()
+}
+
+var (
+	getDurationNs        prometheus.Gauge
+	setDurationNs        prometheus.Gauge
+	setSyncDurationNs    prometheus.Gauge
+	deleteDurationNs     prometheus.Gauge
+	deleteSyncDurationNs prometheus.Gauge
+)
+
+func createPrometheusMetrics() {
+	getDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "cometbft",
+		Subsystem: "db",
+		Name:      "get_duration_ns",
+		Help:      "The duration of the Get() operation in nanoseconds.",
+	})
+	prometheus.MustRegister(getDurationNs)
+	setDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "cometbft",
+		Subsystem: "db",
+		Name:      "set_duration_ns",
+		Help:      "The duration of the Set() operation in nanoseconds.",
+	})
+	prometheus.MustRegister(setDurationNs)
+	setSyncDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "cometbft",
+		Subsystem: "db",
+		Name:      "set_sync_duration_ns",
+		Help:      "The duration of the SetSync() operation in nanoseconds.",
+	})
+	prometheus.MustRegister(setSyncDurationNs)
+	deleteDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "cometbft",
+		Subsystem: "db",
+		Name:      "delete_duration_ns",
+		Help:      "The duration of the Delete() operation in nanoseconds.",
+	})
+	prometheus.MustRegister(deleteDurationNs)
+	deleteSyncDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "cometbft",
+		Subsystem: "db",
+		Name:      "delete_sync_duration_ns",
+		Help:      "The duration of the DeleteSync() operation in nanoseconds.",
+	})
+	prometheus.MustRegister(deleteSyncDurationNs)
 }
 
 type GoLevelDB struct {
@@ -44,7 +96,9 @@ func (db *GoLevelDB) Get(key []byte) ([]byte, error) {
 	if len(key) == 0 {
 		return nil, errKeyEmpty
 	}
+	start := time.Now()
 	res, err := db.db.Get(key, nil)
+	getDurationNs.Set(float64(time.Since(start).Nanoseconds()))
 	if err != nil {
 		if err == errors.ErrNotFound {
 			return nil, nil
@@ -71,7 +125,10 @@ func (db *GoLevelDB) Set(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	if err := db.db.Put(key, value, nil); err != nil {
+	start := time.Now()
+	err := db.db.Put(key, value, nil)
+	setDurationNs.Set(float64(time.Since(start).Nanoseconds()))
+	if err != nil {
 		return err
 	}
 	return nil
@@ -85,7 +142,10 @@ func (db *GoLevelDB) SetSync(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	if err := db.db.Put(key, value, &opt.WriteOptions{Sync: true}); err != nil {
+	start := time.Now()
+	err := db.db.Put(key, value, &opt.WriteOptions{Sync: true})
+	setSyncDurationNs.Set(float64(time.Since(start).Nanoseconds()))
+	if err != nil {
 		return err
 	}
 	return nil
@@ -96,7 +156,10 @@ func (db *GoLevelDB) Delete(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	if err := db.db.Delete(key, nil); err != nil {
+	start := time.Now()
+	err := db.db.Delete(key, nil)
+	deleteDurationNs.Set(float64(time.Since(start).Nanoseconds()))
+	if err != nil {
 		return err
 	}
 	return nil
@@ -107,7 +170,9 @@ func (db *GoLevelDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
+	start := time.Now()
 	err := db.db.Delete(key, &opt.WriteOptions{Sync: true})
+	deleteSyncDurationNs.Set(float64(time.Since(start).Nanoseconds()))
 	if err != nil {
 		return err
 	}
