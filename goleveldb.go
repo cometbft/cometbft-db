@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"net/http"
 	"path/filepath"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
@@ -87,6 +85,12 @@ func NewGoLevelDBWithOpts(name string, dir string, o *opt.Options) (*GoLevelDB, 
 	if err != nil {
 		return nil, err
 	}
+
+	// Create a new levelDBCollector
+	collector := newLevelDBCollector(db)
+	// Register the collector with Prometheus
+	prometheus.MustRegister(collector)
+
 	database := &GoLevelDB{
 		db: db,
 	}
@@ -254,19 +258,4 @@ func (db *GoLevelDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	}
 	itr := db.db.NewIterator(&util.Range{Start: start, Limit: end}, nil)
 	return newGoLevelDBIterator(itr, start, end, true), nil
-}
-
-// ListenAndServePrometheusMetrics creates an additional collector for
-// retrieving goleveldb stats and sets up an HTTP handler for Prometheus to
-// fetch the metrics.
-func (db *GoLevelDB) ListenAndServePrometheusMetrics(listenAddr string) {
-	// Create a new levelDBCollector
-	collector := newLevelDBCollector(db.db)
-
-	// Register the collector with Prometheus
-	prometheus.MustRegister(collector)
-
-	// Set up an HTTP handler to expose the metrics
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(listenAddr, nil)
 }
