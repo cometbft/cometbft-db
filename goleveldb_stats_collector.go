@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -23,7 +22,7 @@ func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 	names := getMetricNames()
 	metrics := make(map[string]prometheus.Gauge, len(names))
 	for _, field := range names {
-		metrics[field] = promauto.NewGauge(prometheus.GaugeOpts{
+		metrics[field] = prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: PROMETHEUS_NAMESPACE,
 			Subsystem: dbName,
 			Name:      field,
@@ -40,7 +39,7 @@ func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 	}
 	levelMetrics := make(map[string]*prometheus.GaugeVec, len(levelMetricsNames))
 	for _, field := range levelMetricsNames {
-		levelMetrics[field] = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		levelMetrics[field] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: PROMETHEUS_NAMESPACE,
 			Subsystem: dbName,
 			Name:      field,

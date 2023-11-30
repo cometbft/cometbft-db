@@ -11,7 +11,6 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 func init() {
@@ -225,49 +224,49 @@ func (db *GoLevelDB) ReverseIterator(start, end []byte) (Iterator, error) {
 }
 
 func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
-	db.getDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.getDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "get_duration_ms",
 		Help:      "The duration of the Get() operation in ms.",
 	})
 	prometheus.MustRegister(db.getDuration)
-	db.setDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.setDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "set_duration_ms",
 		Help:      "The duration of the Set() operation in ms.",
 	})
 	prometheus.MustRegister(db.setDuration)
-	db.setSyncDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.setSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "set_sync_duration_ms",
 		Help:      "The duration of the SetSync() operation in ms.",
 	})
 	prometheus.MustRegister(db.setSyncDuration)
-	db.deleteDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.deleteDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "delete_duration_ms",
 		Help:      "The duration of the Delete() operation in ms.",
 	})
 	prometheus.MustRegister(db.deleteDuration)
-	db.deleteSyncDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.deleteSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "delete_sync_duration_ms",
 		Help:      "The duration of the DeleteSync() operation in ms.",
 	})
 	prometheus.MustRegister(db.deleteSyncDuration)
-	db.batchDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.batchDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "batch_duration_ms",
 		Help:      "The duration of the batch#write operation in ms.",
 	})
 	prometheus.MustRegister(db.batchDuration)
-	db.batchSyncDuration = promauto.NewGauge(prometheus.GaugeOpts{
+	db.batchSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
 		Name:      "batch_sync_duration_ms",
