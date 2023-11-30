@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,10 +9,9 @@ import (
 
 // levelDBCollector is a Prometheus collector for LevelDB statistics.
 type levelDBCollector struct {
-	db           *leveldb.DB
-	mu           sync.Mutex
-	metrics      map[string]prometheus.Gauge
-	levelMetrics map[string]*prometheus.GaugeVec
+	db      *leveldb.DB
+	mu      sync.Mutex
+	metrics map[string]prometheus.Gauge
 }
 
 // newLevelDBCollector creates a new LevelDBCollector.
@@ -30,27 +28,9 @@ func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 		})
 	}
 
-	levelMetricsNames := []string{
-		"LevelSizes",
-		"LevelTablesCounts",
-		"LevelRead",
-		"LevelWrite",
-		"LevelDurations",
-	}
-	levelMetrics := make(map[string]*prometheus.GaugeVec, len(levelMetricsNames))
-	for _, field := range levelMetricsNames {
-		levelMetrics[field] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: PROMETHEUS_NAMESPACE,
-			Subsystem: dbName,
-			Name:      field,
-			Help:      "LevelDB statistics: " + field,
-		}, []string{"level"})
-	}
-
 	return &levelDBCollector{
-		db:           db,
-		metrics:      metrics,
-		levelMetrics: levelMetrics,
+		db:      db,
+		metrics: metrics,
 	}
 }
 
@@ -67,15 +47,18 @@ func getMetricNames() []string {
 
 		"BlockCacheSize",
 		"OpenedTablesCount",
+
+		"TotalLevelSizes",
+		"TotalLevelTablesCounts",
+		"TotalLevelRead",
+		"TotalLevelWrite",
+		"TotalLevelDurations",
 	}
 }
 
 // Describe implements the prometheus.Collector interface.
 func (c *levelDBCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range c.metrics {
-		metric.Describe(ch)
-	}
-	for _, metric := range c.levelMetrics {
 		metric.Describe(ch)
 	}
 }
@@ -105,30 +88,32 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 	stats["BlockCacheSize"] = float64(dbStats.BlockCacheSize)
 	stats["OpenedTablesCount"] = float64(dbStats.OpenedTablesCount)
 
+	// XXX: DBStats does not have a field with the number of levels, so we have
+	// to use the length of the first slice.
+	levels := len(dbStats.LevelSizes)
+	totalLevelSizes := 0.0
+	totalLevelTablesCounts := 0.0
+	totalLevelRead := 0.0
+	totalLevelWrite := 0.0
+	totalLevelDurations := 0.0
+	for i := 0; i < levels; i++ {
+		totalLevelSizes += float64(dbStats.LevelSizes[i])
+		totalLevelTablesCounts += float64(dbStats.LevelTablesCounts[i])
+		totalLevelRead += float64(dbStats.LevelRead[i])
+		totalLevelWrite += float64(dbStats.LevelWrite[i])
+		totalLevelDurations += float64(dbStats.LevelDurations[i].Seconds())
+	}
+
+	stats["TotalLevelSizes"] = totalLevelSizes / 1048576.0
+	stats["TotalLevelTablesCounts"] = totalLevelTablesCounts
+	stats["TotalLevelRead"] = totalLevelRead / 1048576.0
+	stats["TotalLevelWrite"] = totalLevelWrite / 1048576.0
+	stats["TotalLevelDurations"] = totalLevelDurations
+
 	for name, value := range stats {
 		if metric, ok := c.metrics[name]; ok {
 			metric.Set(value)
 			metric.Collect(ch)
 		}
 	}
-
-	// XXX: DBStats does not have a field with the number of levels, so we have
-	// to use the length of the first slice.
-	levels := len(dbStats.LevelSizes)
-	for i := 0; i < levels; i++ {
-		stats := make(map[string]float64)
-		stats["LevelSizes"] = float64(dbStats.LevelSizes[i])
-		stats["LevelTablesCounts"] = float64(dbStats.LevelTablesCounts[i])
-		stats["LevelRead"] = float64(dbStats.LevelRead[i])
-		stats["LevelWrite"] = float64(dbStats.LevelWrite[i])
-		stats["LevelDurations"] = float64(dbStats.LevelDurations[i].Seconds())
-
-		for name, value := range stats {
-			if metric, ok := c.levelMetrics[name]; ok {
-				metric.WithLabelValues(fmt.Sprint(i)).Set(value)
-				metric.Collect(ch)
-			}
-		}
-	}
-
 }
