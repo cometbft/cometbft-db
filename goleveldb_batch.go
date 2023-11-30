@@ -3,33 +3,9 @@ package db
 import (
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
-
-var (
-	batchDurationNs     prometheus.Gauge
-	batchSyncDurationNs prometheus.Gauge
-)
-
-func init() {
-	batchDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
-		Namespace: "cometbft",
-		Subsystem: "db",
-		Name:      "batch_duration_ns",
-		Help:      "The duration of the batch#write operation in nanoseconds.",
-	})
-	prometheus.MustRegister(batchDurationNs)
-	batchSyncDurationNs = promauto.NewGauge(prometheus.GaugeOpts{
-		Namespace: "cometbft",
-		Subsystem: "db",
-		Name:      "batch_sync_duration_ns",
-		Help:      "The duration of the batch#write(sync) operation in nanoseconds.",
-	})
-	prometheus.MustRegister(batchSyncDurationNs)
-}
 
 type goLevelDBBatch struct {
 	db    *GoLevelDB
@@ -89,9 +65,9 @@ func (b *goLevelDBBatch) write(sync bool) error {
 	start := time.Now()
 	err := b.db.db.Write(b.batch, &opt.WriteOptions{Sync: sync})
 	if sync {
-		batchSyncDurationNs.Set(float64(time.Since(start).Nanoseconds()))
+		b.db.batchSyncDuration.Set(float64(time.Since(start).Milliseconds()))
 	} else {
-		batchDurationNs.Set(float64(time.Since(start).Nanoseconds()))
+		b.db.batchDuration.Set(float64(time.Since(start).Milliseconds()))
 	}
 	if err != nil {
 		return err

@@ -18,12 +18,13 @@ type levelDBCollector struct {
 }
 
 // newLevelDBCollector creates a new LevelDBCollector.
-func newLevelDBCollector(db *leveldb.DB) *levelDBCollector {
+func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 	// Initialize Prometheus metrics
 	metrics := make(map[string]prometheus.Gauge)
 	for _, field := range getMetricNames() {
 		metrics[field] = promauto.NewGauge(prometheus.GaugeOpts{
-			Namespace: "leveldb",
+			Namespace: PROMETHEUS_NAMESPACE,
+			Subsystem: dbName,
 			Name:      field,
 			Help:      "LevelDB statistics: " + field,
 		})
@@ -39,7 +40,7 @@ func newLevelDBCollector(db *leveldb.DB) *levelDBCollector {
 	levelMetrics := make(map[string]*prometheus.GaugeVec)
 	for _, field := range levelMetricsNames {
 		levelMetrics[field] = promauto.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: "leveldb",
+			Namespace: dbName,
 			Name:      field,
 			Help:      "LevelDB statistics: " + field,
 		}, []string{"level"})
@@ -89,7 +90,7 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	stats["WriteDelayCount"] = float64(dbStats.WriteDelayCount)
-	stats["WriteDelayDuration"] = float64(dbStats.WriteDelayDuration.Nanoseconds())
+	stats["WriteDelayDuration"] = float64(dbStats.WriteDelayDuration.Milliseconds())
 
 	stats["AliveSnapshots"] = float64(dbStats.AliveSnapshots)
 	stats["AliveIterators"] = float64(dbStats.AliveIterators)
@@ -116,7 +117,7 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 		stats["LevelTablesCounts"] = float64(dbStats.LevelTablesCounts[i])
 		stats["LevelRead"] = float64(dbStats.LevelRead[i])
 		stats["LevelWrite"] = float64(dbStats.LevelWrite[i])
-		stats["LevelDurations"] = float64(dbStats.LevelDurations[i])
+		stats["LevelDurations"] = float64(dbStats.LevelDurations[i].Seconds())
 
 		for name, value := range stats {
 			if metric, ok := c.levelMetrics[name]; ok {
