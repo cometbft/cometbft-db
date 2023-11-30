@@ -20,8 +20,9 @@ type levelDBCollector struct {
 // newLevelDBCollector creates a new LevelDBCollector.
 func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 	// Initialize Prometheus metrics
-	metrics := make(map[string]prometheus.Gauge)
-	for _, field := range getMetricNames() {
+	names := getMetricNames()
+	metrics := make(map[string]prometheus.Gauge, len(names))
+	for _, field := range names {
 		metrics[field] = promauto.NewGauge(prometheus.GaugeOpts{
 			Namespace: PROMETHEUS_NAMESPACE,
 			Subsystem: dbName,
@@ -37,10 +38,11 @@ func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 		"LevelWrite",
 		"LevelDurations",
 	}
-	levelMetrics := make(map[string]*prometheus.GaugeVec)
+	levelMetrics := make(map[string]*prometheus.GaugeVec, len(levelMetricsNames))
 	for _, field := range levelMetricsNames {
 		levelMetrics[field] = promauto.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: dbName,
+			Namespace: PROMETHEUS_NAMESPACE,
+			Subsystem: dbName,
 			Name:      field,
 			Help:      "LevelDB statistics: " + field,
 		}, []string{"level"})
@@ -74,6 +76,9 @@ func (c *levelDBCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range c.metrics {
 		metric.Describe(ch)
 	}
+	for _, metric := range c.levelMetrics {
+		metric.Describe(ch)
+	}
 }
 
 // Collect implements the prometheus.Collector interface.
@@ -83,8 +88,8 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 
 	stats := make(map[string]float64)
 
-	var dbStats *leveldb.DBStats
-	err := c.db.Stats(dbStats)
+	dbStats := leveldb.DBStats{}
+	err := c.db.Stats(&dbStats)
 	if err != nil {
 		panic("Failed to get stats; qed")
 	}
