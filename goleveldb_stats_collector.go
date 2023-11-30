@@ -2,25 +2,23 @@ package db
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// LevelDBCollector is a Prometheus collector for LevelDB statistics.
-type LevelDBCollector struct {
+// levelDBCollector is a Prometheus collector for LevelDB statistics.
+type levelDBCollector struct {
 	db           *leveldb.DB
 	mu           sync.Mutex
 	metrics      map[string]prometheus.Gauge
 	levelMetrics map[string]*prometheus.GaugeVec
 }
 
-// NewLevelDBCollector creates a new LevelDBCollector.
-func NewLevelDBCollector(db *leveldb.DB) *LevelDBCollector {
+// newLevelDBCollector creates a new LevelDBCollector.
+func newLevelDBCollector(db *leveldb.DB) *levelDBCollector {
 	// Initialize Prometheus metrics
 	metrics := make(map[string]prometheus.Gauge)
 	for _, field := range getMetricNames() {
@@ -47,7 +45,7 @@ func NewLevelDBCollector(db *leveldb.DB) *LevelDBCollector {
 		}, []string{"level"})
 	}
 
-	return &LevelDBCollector{
+	return &levelDBCollector{
 		db:           db,
 		metrics:      metrics,
 		levelMetrics: levelMetrics,
@@ -71,14 +69,14 @@ func getMetricNames() []string {
 }
 
 // Describe implements the prometheus.Collector interface.
-func (c *LevelDBCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *levelDBCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range c.metrics {
 		metric.Describe(ch)
 	}
 }
 
 // Collect implements the prometheus.Collector interface.
-func (c *LevelDBCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -109,6 +107,8 @@ func (c *LevelDBCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
+	// XXX: DBStats does not have a field with the number of levels, so we have
+	// to use the length of the first slice.
 	levels := len(dbStats.LevelSizes)
 	for i := 0; i < levels; i++ {
 		stats := make(map[string]float64)
@@ -126,24 +126,4 @@ func (c *LevelDBCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-}
-
-func main() {
-	// Open a LevelDB database (replace this with your LevelDB initialization logic)
-	db, err := leveldb.OpenFile("/path/to/your/db", nil)
-	if err != nil {
-		// Handle the error, e.g., log it and exit.
-		panic(err)
-	}
-	defer db.Close()
-
-	// Create a new LevelDBCollector
-	collector := NewLevelDBCollector(db)
-
-	// Register the collector with Prometheus
-	prometheus.MustRegister(collector)
-
-	// Set up an HTTP handler to expose the metrics
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":8080", nil)
 }
