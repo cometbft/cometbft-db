@@ -2,7 +2,7 @@
 
 ## v0.9.0
 
-*December 1, 2024*
+*December 1, 2023*
 
 This release primarily updates some key dependencies, including adding support
 for RocksDB v8. It also bumps the minimum Go version to v1.21 in order for
