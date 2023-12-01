@@ -13,16 +13,16 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN apt update \
     && apt install -y \
-       libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
+       libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
        make tar wget build-essential \
        libleveldb-dev libleveldb1d
 
 FROM build AS install
-ARG ROCKSDB=7.10.2
+ARG ROCKSDB=8.8.1
 
 # Install Rocksdb
 RUN \
-  wget -q https://github.com/facebook/rocksdb/archive/v${ROCKSDB}.tar.gz \
+  wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
   && DEBUG_LEVEL=0 make -j4 shared_lib \
