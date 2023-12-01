@@ -11,29 +11,14 @@ FROM golang:1.20 AS build
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-    make tar wget build-essential gcc-11 g++-11 
-
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11 
-RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11
+RUN apt update \
+    && apt install -y \
+       libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
+       make tar wget build-essential \
+       libleveldb-dev libleveldb1d
 
 FROM build AS install
-ARG LEVELDB=1.20
 ARG ROCKSDB=7.10.2
-
-# Install cleveldb
-RUN \
-  wget -q https://github.com/google/leveldb/archive/v${LEVELDB}.tar.gz \
-  && tar xvf v${LEVELDB}.tar.gz \
-  && cd leveldb-${LEVELDB} \
-  && make \
-  && cp -a out-static/lib* out-shared/lib* /usr/local/lib \
-  && cd include \
-  && cp -a leveldb /usr/local/include \
-  && ldconfig \
-  && cd ../.. \
-  && rm -rf v${LEVELDB}.tar.gz leveldb-${LEVELDB}
 
 # Install Rocksdb
 RUN \
