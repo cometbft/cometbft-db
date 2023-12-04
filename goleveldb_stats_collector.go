@@ -82,10 +82,10 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 	stats["AliveSnapshots"] = float64(dbStats.AliveSnapshots)
 	stats["AliveIterators"] = float64(dbStats.AliveIterators)
 
-	stats["IOWrite"] = float64(dbStats.IOWrite)
-	stats["IORead"] = float64(dbStats.IORead)
+	stats["IOWrite"] = float64(dbStats.IOWrite) / 1048576.0
+	stats["IORead"] = float64(dbStats.IORead) / 1048576.0
 
-	stats["BlockCacheSize"] = float64(dbStats.BlockCacheSize)
+	stats["BlockCacheSize"] = float64(dbStats.BlockCacheSize) / 1048576.0
 	stats["OpenedTablesCount"] = float64(dbStats.OpenedTablesCount)
 
 	// XXX: DBStats does not have a field with the number of levels, so we have
