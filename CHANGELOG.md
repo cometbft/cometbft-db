@@ -48,10 +48,10 @@ upgrade to the latest version(s) of Go ASAP.
 
 ### DEPENDENCIES
 
-- Update to the latest version of golang.org/x/net
-  ([\#40](https://github.com/cometbft/cometbft-db/pull/40))
 - Switch rocksdb binding from gorocksdb to grocksdb, bump librocksdb dependency
   to `v7.10.2` ([\#42](https://github.com/cometbft/cometbft-db/pull/42))
+- Update to the latest version of golang.org/x/net
+  ([\#40](https://github.com/cometbft/cometbft-db/pull/40))
 
 ## v0.7.0
 
