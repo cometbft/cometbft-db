@@ -63,12 +63,14 @@ func (b *goLevelDBBatch) write(sync bool) error {
 		return errBatchClosed
 	}
 	start := time.Now()
+	defer func() {
+		if sync {
+			b.db.batchSyncDuration.Set(float64(time.Since(start).Milliseconds()))
+		} else {
+			b.db.batchDuration.Set(float64(time.Since(start).Milliseconds()))
+		}
+	}()
 	err := b.db.db.Write(b.batch, &opt.WriteOptions{Sync: sync})
-	if sync {
-		b.db.batchSyncDuration.Set(float64(time.Since(start).Milliseconds()))
-	} else {
-		b.db.batchDuration.Set(float64(time.Since(start).Milliseconds()))
-	}
 	if err != nil {
 		return err
 	}
