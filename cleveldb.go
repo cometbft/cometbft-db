@@ -48,6 +48,7 @@ func NewCLevelDB(name string, dir string) (*CLevelDB, error) {
 		wo:     wo,
 		woSync: woSync,
 	}
+
 	return database, nil
 }
 

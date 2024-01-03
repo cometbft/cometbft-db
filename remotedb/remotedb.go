@@ -121,3 +121,7 @@ func (rd *RemoteDB) Iterator(start, end []byte) (db.Iterator, error) {
 	}
 	return makeIterator(dic), nil
 }
+
+func (rd *RemoteDB) Compact(start, end []byte) error {
+	return nil
+}

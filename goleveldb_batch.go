@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"time"
 )
 
 type goLevelDBBatch struct {
@@ -60,6 +61,14 @@ func (b *goLevelDBBatch) write(sync bool) error {
 	if b.batch == nil {
 		return errBatchClosed
 	}
+	start := time.Now()
+	defer func() {
+		if sync {
+			b.db.batchSyncDuration.Set(float64(time.Since(start).Milliseconds()))
+		} else {
+			b.db.batchDuration.Set(float64(time.Since(start).Milliseconds()))
+		}
+	}()
 	err := b.db.db.Write(b.batch, &opt.WriteOptions{Sync: sync})
 	if err != nil {
 		return err

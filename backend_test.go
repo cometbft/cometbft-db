@@ -36,9 +36,10 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	// Default
 	dirname, err := os.MkdirTemp("", fmt.Sprintf("test_backend_%s_", backend))
 	require.Nil(t, err)
-	db, err := NewDB("testdb", backend, dirname)
+	name := fmt.Sprintf("testdb_%x", randStr(12))
+	db, err := NewDB(name, backend, dirname)
 	require.NoError(t, err)
-	defer cleanupDBDir(dirname, "testdb")
+	defer cleanupDBDir(dirname, name)
 
 	// A nonexistent key should return nil.
 	value, err := db.Get([]byte("a"))
@@ -303,6 +304,7 @@ func testDBIterator(t *testing.T, backend BackendType) {
 	// Ensure that the iterators don't panic with an empty database.
 	dir2, err := os.MkdirTemp("", "tm-db-test")
 	require.NoError(t, err)
+	name = fmt.Sprintf("test_%x", randStr(12))
 	db2, err := NewDB(name, backend, dir2)
 	require.NoError(t, err)
 	defer cleanupDBDir(dir2, name)

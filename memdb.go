@@ -205,3 +205,8 @@ func (db *MemDB) ReverseIteratorNoMtx(start, end []byte) (Iterator, error) {
 	}
 	return newMemDBIteratorMtxChoice(db, start, end, true, false), nil
 }
+
+func (db *MemDB) Compact(start, end []byte) error {
+	// No Compaction is supported for memDB and there is no point in supporting compaction for a memory DB
+	return nil
+}
