@@ -11,20 +11,21 @@ import (
 type levelDBCollector struct {
 	db      *leveldb.DB
 	mu      sync.Mutex
-	metrics map[string]prometheus.Gauge
+	metrics map[string]prometheus.Histogram
 }
 
 // newLevelDBCollector creates a new LevelDBCollector.
 func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 	// Initialize Prometheus metrics
 	names := getMetricNames()
-	metrics := make(map[string]prometheus.Gauge, len(names))
+	metrics := make(map[string]prometheus.Histogram, len(names))
 	for _, field := range names {
-		metrics[field] = prometheus.NewGauge(prometheus.GaugeOpts{
+		metrics[field] = prometheus.NewHistogram(prometheus.HistogramOpts{
 			Namespace: PROMETHEUS_NAMESPACE,
 			Subsystem: dbName,
 			Name:      field,
 			Help:      "LevelDB statistics: " + field,
+			Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
 		})
 	}
 
@@ -112,7 +113,7 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 
 	for name, value := range stats {
 		if metric, ok := c.metrics[name]; ok {
-			metric.Set(value)
+			metric.Observe(value)
 			metric.Collect(ch)
 		}
 	}
