@@ -25,7 +25,7 @@ func newLevelDBCollector(db *leveldb.DB, dbName string) *levelDBCollector {
 			Subsystem: dbName,
 			Name:      field,
 			Help:      "LevelDB statistics: " + field,
-			Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+			Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 		})
 	}
 

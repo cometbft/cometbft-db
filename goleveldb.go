@@ -230,7 +230,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "get_duration_s",
 		Help:      "The duration of the Get() operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.getDuration)
 
@@ -239,7 +239,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "set_duration_s",
 		Help:      "The duration of the Get() operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.setDuration)
 
@@ -248,7 +248,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "set_sync_duration_s",
 		Help:      "The duration of the SetSync() operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.setSyncDuration)
 	db.deleteDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
@@ -256,7 +256,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "delete_duration_s",
 		Help:      "The duration of the Delete() operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.deleteDuration)
 	db.deleteSyncDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
@@ -264,7 +264,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "delete_sync_duration_s",
 		Help:      "The duration of the DeleteSync() operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.deleteSyncDuration)
 	db.batchDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
@@ -272,7 +272,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "batch_duration_s",
 		Help:      "The duration of the batch#write operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.batchDuration)
 	db.batchSyncDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
@@ -280,7 +280,7 @@ func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 		Subsystem: dbName,
 		Name:      "batch_sync_duration_s",
 		Help:      "The duration of the batch#write(sync) operation in s.",
-		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 10),
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.batchSyncDuration)
 }
