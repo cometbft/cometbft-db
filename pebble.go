@@ -91,15 +91,7 @@ func NewPebbleDBWithOpts(name string, dir string) (*PebbleDB, error) {
 		Filters: map[string]pebble.FilterPolicy{
 			"bloom": bloom.FilterPolicy(100),
 		}, // 1000 bits per key, 10 hash functions
-		MaxOpenFiles:          20000,
-		L0CompactionThreshold: 2,        // Default is 4
-		L0StopWritesThreshold: 10,       // Default is 12
-		LBaseMaxBytes:         64 << 20, // Default is 64MB
-		Levels: []pebble.LevelOptions{
-			{TargetFileSize: 2 << 20}, // Level 0
-			{TargetFileSize: 4 << 20}, // Level 1
-			{TargetFileSize: 8 << 20}, // Level 2
-		},
+		MaxOpenFiles: 5000,
 	}
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
