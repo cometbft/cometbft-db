@@ -84,14 +84,19 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 
 func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
-	opts.EnsureDefaults()
+	opts = &pebble.Options{
+		// Example: Increase MemTable size
+		MemTableSize: 64 << 20, // 64MB
+		// Example: Enable bloom filters
+		// ... add more options as needed
+	}
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
 		return nil, err
 	}
 	return &PebbleDB{
 		db: p,
-	}, err
+	}, nil
 }
 
 // Get implements DB.
