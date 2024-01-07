@@ -1,0 +1,21 @@
+# runs benchmarks on the pebble and goleveldb backends
+name: Benchmarks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    benchmarks:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-go@v3
+            with:
+              go-version: 1.21
+          - name: Run benchmarks
+            run: go test -bench=.
