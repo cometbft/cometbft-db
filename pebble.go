@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"sync"
 
 	"github.com/cockroachdb/pebble"
 )
@@ -65,6 +66,12 @@ func init() {
 // PebbleDB is a PebbleDB backend.
 type PebbleDB struct {
 	db *pebble.DB
+}
+
+var iteratorPool = sync.Pool{
+	New: func() interface{} {
+		return &pebbleDBIterator{}
+	},
 }
 
 var _ DB = (*PebbleDB)(nil)
@@ -349,6 +356,17 @@ type pebbleDBIterator struct {
 var _ Iterator = (*pebbleDBIterator)(nil)
 
 func newPebbleDBIterator(source *pebble.Iterator, start, end []byte, isReverse bool) *pebbleDBIterator {
+	item := iteratorPool.Get()
+	itr, ok := item.(*pebbleDBIterator)
+	if !ok {
+		panic("item in iteratorPool is not of type *pebbleDBIterator")
+	}
+	itr.source = source
+	itr.start = start
+	itr.end = end
+	itr.isReverse = isReverse
+	itr.isInvalid = false
+
 	if isReverse {
 		if end == nil {
 			source.Last()
@@ -358,13 +376,7 @@ func newPebbleDBIterator(source *pebble.Iterator, start, end []byte, isReverse b
 			source.First()
 		}
 	}
-	return &pebbleDBIterator{
-		source:    source,
-		start:     start,
-		end:       end,
-		isReverse: isReverse,
-		isInvalid: false,
-	}
+	return itr
 }
 
 // Domain implements Iterator.
@@ -448,6 +460,12 @@ func (itr *pebbleDBIterator) Close() error {
 	if err != nil {
 		return err
 	}
+	itr.source = nil
+	itr.start = nil
+	itr.end = nil
+	itr.isReverse = false
+	itr.isInvalid = true
+	iteratorPool.Put(itr)
 	return nil
 }
 
