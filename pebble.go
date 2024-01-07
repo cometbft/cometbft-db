@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/bloom"
 )
 
 // ForceSync
@@ -85,9 +86,20 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 func NewPebbleDBWithOpts(name string, dir string) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
 	opts := &pebble.Options{
-		// Increase MemTable size
-		MemTableSize: 64 << 20, // 64MB
-		// ... add more options as needed
+		Cache:        pebble.NewCache(1 << 31), // 2GB
+		MemTableSize: 1 << 31,                  // 2GB
+		Filters: map[string]pebble.FilterPolicy{
+			"bloom": bloom.FilterPolicy(100),
+		}, // 1000 bits per key, 10 hash functions
+		MaxOpenFiles:          20000,
+		L0CompactionThreshold: 2,        // Default is 4
+		L0StopWritesThreshold: 10,       // Default is 12
+		LBaseMaxBytes:         64 << 20, // Default is 64MB
+		Levels: []pebble.LevelOptions{
+			{TargetFileSize: 2 << 20}, // Level 0
+			{TargetFileSize: 4 << 20}, // Level 1
+			{TargetFileSize: 8 << 20}, // Level 2
+		},
 	}
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
@@ -130,38 +142,16 @@ func (db *PebbleDB) Has(key []byte) (bool, error) {
 
 // Set implements DB.
 func (db *PebbleDB) Set(key []byte, value []byte) error {
-	if len(key) == 0 {
-		return errKeyEmpty
-	}
-	if value == nil {
-		return errValueNil
-	}
-
 	wopts := pebble.NoSync
 	if isForceSync {
 		wopts = pebble.Sync
 	}
-
-	err := db.db.Set(key, value, wopts)
-	if err != nil {
-		return err
-	}
-	return nil
+	return db.set(key, value, *wopts)
 }
 
 // SetSync implements DB.
 func (db *PebbleDB) SetSync(key []byte, value []byte) error {
-	if len(key) == 0 {
-		return errKeyEmpty
-	}
-	if value == nil {
-		return errValueNil
-	}
-	err := db.db.Set(key, value, pebble.Sync)
-	if err != nil {
-		return err
-	}
-	return nil
+	return db.set(key, value, *pebble.Sync)
 }
 
 // Delete implements DB.
@@ -237,6 +227,12 @@ func (db *PebbleDB) NewBatch() Batch {
 	return newPebbleDBBatch(db)
 }
 
+func newPebbleDBBatch(db *PebbleDB) *pebbleDBBatch {
+	return &pebbleDBBatch{
+		batch: db.db.NewBatch(),
+	}
+}
+
 // Iterator implements DB.
 func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
@@ -274,10 +270,22 @@ type pebbleDBBatch struct {
 
 var _ Batch = (*pebbleDBBatch)(nil)
 
-func newPebbleDBBatch(db *PebbleDB) *pebbleDBBatch {
-	return &pebbleDBBatch{
-		batch: db.db.NewBatch(),
+func (b *pebbleDBBatch) Write() error {
+	if b.batch == nil {
+		return errBatchClosed
 	}
+
+	wopts := pebble.NoSync
+	if isForceSync {
+		wopts = pebble.Sync
+	}
+	err := b.batch.Commit(wopts)
+	if err != nil {
+		return err
+	}
+	// Make sure batch cannot be used afterwards. Callers should still call Close(), for errors.
+
+	return b.Close()
 }
 
 // Set implements Batch.
@@ -308,23 +316,6 @@ func (b *pebbleDBBatch) Delete(key []byte) error {
 }
 
 // Write implements Batch.
-func (b *pebbleDBBatch) Write() error {
-	if b.batch == nil {
-		return errBatchClosed
-	}
-
-	wopts := pebble.NoSync
-	if isForceSync {
-		wopts = pebble.Sync
-	}
-	err := b.batch.Commit(wopts)
-	if err != nil {
-		return err
-	}
-	// Make sure batch cannot be used afterwards. Callers should still call Close(), for errors.
-
-	return b.Close()
-}
 
 // WriteSync implements Batch.
 func (b *pebbleDBBatch) WriteSync() error {
@@ -479,4 +470,20 @@ func (itr *pebbleDBIterator) assertIsValid() {
 	if !itr.Valid() {
 		panic("iterator is invalid")
 	}
+}
+
+// helper function to reduce code duplication
+func (db *PebbleDB) set(key []byte, value []byte, sync pebble.WriteOptions) error {
+	if len(key) == 0 {
+		return errKeyEmpty
+	}
+	if value == nil {
+		return errValueNil
+	}
+
+	err := db.db.Set(key, value, &sync)
+	if err != nil {
+		return err
+	}
+	return nil
 }
