@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,9 +27,16 @@ func init() {
 }
 
 func cleanupDBDir(dir, name string) {
-	err := os.RemoveAll(filepath.Join(dir, name) + ".db")
-	if err != nil {
-		panic(err)
+	for i := 0; i < 5; i++ {
+		err := os.RemoveAll(filepath.Join(dir, name) + ".db")
+		if err != nil {
+			if i == 4 { // If this was the last attempt, panic
+				panic(err)
+			}
+			time.Sleep(time.Second) // Wait for a second before the next attempt
+		} else {
+			break // If there was no error, break the loop
+		}
 	}
 }
 

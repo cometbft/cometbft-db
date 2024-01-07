@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,8 +61,8 @@ func BenchmarkDB(b *testing.B) {
 	var variationCases []BenchmarkVariationsCase
 
 	// Define the range of keys and values
-	keys := []int{1e3, 1e4, 1e5, 1e6}
-	values := []int{1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17, 1 << 18, 1 << 19}
+	keys := []int{1e3, 1e4}
+	values := []int{1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15}
 
 	// Define the backends
 	backends := []BackendType{PebbleDBBackend, GoLevelDBBackend}
@@ -101,10 +102,102 @@ func BenchmarkDB(b *testing.B) {
 	}
 
 	// Print out the comparison table
-	fmt.Println("Backend\tSetTime\tReadTime\tWriteTime\tConcurrentTime")
-	for name, result := range results {
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", name, result.SetTime, result.ReadTime, result.WriteTime, result.ConcurrentTime)
+	fmt.Println("Test Case\tBackend\tSetTime\tReadTime\tWriteTime\tConcurrentTime")
+	for _, vc := range variationCases {
+		var resultsArr []BenchmarkResult
+		for _, backend := range backends {
+			result := results[fmt.Sprintf("%s_%s", vc.Name, backend)]
+			resultsArr = append(resultsArr, result)
+		}
+
+		// Calculate percentage difference
+		setTimeDiff := (resultsArr[0].SetTime.Seconds() - resultsArr[1].SetTime.Seconds()) / resultsArr[0].SetTime.Seconds() * 100
+		readTimeDiff := (resultsArr[0].ReadTime.Seconds() - resultsArr[1].ReadTime.Seconds()) / resultsArr[0].ReadTime.Seconds() * 100
+		writeTimeDiff := (resultsArr[0].WriteTime.Seconds() - resultsArr[1].WriteTime.Seconds()) / resultsArr[0].WriteTime.Seconds() * 100
+		concurrentTimeDiff := (resultsArr[0].ConcurrentTime.Seconds() - resultsArr[1].ConcurrentTime.Seconds()) / resultsArr[0].ConcurrentTime.Seconds() * 100
+
+		// Print results with color
+		for i, backend := range backends {
+			result := results[fmt.Sprintf("%s_%s", vc.Name, backend)]
+			if i == 0 {
+				color.Set(color.FgGreen)
+			} else {
+				if resultsArr[0].SetTime.Seconds() < resultsArr[1].SetTime.Seconds() {
+					color.Set(color.FgRed)
+				} else {
+					color.Set(color.FgGreen)
+				}
+			}
+			fmt.Printf("%s\t%s\t", vc.Name, backend)
+
+			if resultsArr[0].SetTime.Seconds() < resultsArr[1].SetTime.Seconds() {
+				color.Set(color.FgGreen)
+			} else {
+				color.Set(color.FgRed)
+			}
+			fmt.Printf("%s\t", result.SetTime)
+
+			if resultsArr[0].ReadTime.Seconds() < resultsArr[1].ReadTime.Seconds() {
+				color.Set(color.FgGreen)
+			} else {
+				color.Set(color.FgRed)
+			}
+			fmt.Printf("%s\t", result.ReadTime)
+
+			if resultsArr[0].WriteTime.Seconds() < resultsArr[1].WriteTime.Seconds() {
+				color.Set(color.FgGreen)
+			} else {
+				color.Set(color.FgRed)
+			}
+			fmt.Printf("%s\t", result.WriteTime)
+
+			if resultsArr[0].ConcurrentTime.Seconds() < resultsArr[1].ConcurrentTime.Seconds() {
+				color.Set(color.FgGreen)
+			} else {
+				color.Set(color.FgRed)
+			}
+			fmt.Printf("%s\n", result.ConcurrentTime)
+
+			color.Unset() // Reset to default color
+
+			// Calculate percentage difference and print results
+			setTimeDiff := (resultsArr[0].SetTime.Seconds() - resultsArr[1].SetTime.Seconds()) / resultsArr[0].SetTime.Seconds() * 100
+			readTimeDiff := (resultsArr[0].ReadTime.Seconds() - resultsArr[1].ReadTime.Seconds()) / resultsArr[0].ReadTime.Seconds() * 100
+			writeTimeDiff := (resultsArr[0].WriteTime.Seconds() - resultsArr[1].WriteTime.Seconds()) / resultsArr[0].WriteTime.Seconds() * 100
+			concurrentTimeDiff := (resultsArr[0].ConcurrentTime.Seconds() - resultsArr[1].ConcurrentTime.Seconds()) / resultsArr[0].ConcurrentTime.Seconds() * 100
+
+			if setTimeDiff > 0 {
+				fmt.Printf("PebbleDB is %.2f%% faster when setting values.\n", setTimeDiff)
+			} else {
+				fmt.Printf("GoLevelDB is %.2f%% faster when setting values.\n", -setTimeDiff)
+			}
+
+			if readTimeDiff > 0 {
+				fmt.Printf("PebbleDB is %.2f%% faster when reading values.\n", readTimeDiff)
+			} else {
+				fmt.Printf("GoLevelDB is %.2f%% faster when reading values.\n", -readTimeDiff)
+			}
+
+			if writeTimeDiff > 0 {
+				fmt.Printf("PebbleDB is %.2f%% faster when writing values.\n", writeTimeDiff)
+			} else {
+				fmt.Printf("GoLevelDB is %.2f%% faster when writing values.\n", -writeTimeDiff)
+			}
+
+			if concurrentTimeDiff > 0 {
+				fmt.Printf("PebbleDB is %.2f%% faster when reading and writing values concurrently.\n", concurrentTimeDiff)
+			} else {
+				fmt.Printf("GoLevelDB is %.2f%% faster when reading and writing values concurrently.\n", -concurrentTimeDiff)
+			}
+		}
+
+		// Print percentage difference
+		fmt.Printf("SetTime difference: %.2f%%\n", setTimeDiff)
+		fmt.Printf("ReadTime difference: %.2f%%\n", readTimeDiff)
+		fmt.Printf("WriteTime difference: %.2f%%\n", writeTimeDiff)
+		fmt.Printf("ConcurrentTime difference: %.2f%%\n", concurrentTimeDiff)
 	}
+
 }
 
 func benchmarkDBVariations(b *testing.B, db DB, numKeys int, valueSize int) BenchmarkResult {
@@ -152,7 +245,7 @@ func benchmarkDBVariations(b *testing.B, db DB, numKeys int, valueSize int) Benc
 	concurrentTime := time.Now()
 	for i := 0; i < numRoutines; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
 			for j := 0; j < numOpsPerRoutine; j++ {
 				key := fmt.Sprintf("key_%d", rand.Intn(numKeys))
@@ -164,7 +257,7 @@ func benchmarkDBVariations(b *testing.B, db DB, numKeys int, valueSize int) Benc
 				_, err = db.Get([]byte(key))
 				require.NoError(b, err)
 			}
-		}(i)
+		}()
 	}
 	// Wait for all goroutines to finish
 	wg.Wait()
