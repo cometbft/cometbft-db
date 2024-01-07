@@ -40,7 +40,7 @@ func (rd *RemoteDB) InitRemote(in *Init) error {
 var _ db.DB = (*RemoteDB)(nil)
 
 // Close is a noop currently
-func (rd *RemoteDB) Close() error {
+func (*RemoteDB) Close() error {
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (rd *RemoteDB) NewBatch() db.Batch {
 
 // TODO: Implement Print when db.DB implements a method
 // to print to a string and not db.Print to stdout.
-func (rd *RemoteDB) Print() error {
+func (*RemoteDB) Print() error {
 	return errors.New("remoteDB.Print: unimplemented")
 }
 

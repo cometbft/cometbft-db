@@ -5,7 +5,7 @@ import (
 	"context"
 	"log"
 
-	grpcdb "github.com/cometbft/cometbft-db/remotedb/grpcdb"
+	"github.com/cometbft/cometbft-db/remotedb/grpcdb"
 	protodb "github.com/cometbft/cometbft-db/remotedb/proto"
 )
 

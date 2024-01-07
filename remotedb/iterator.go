@@ -65,7 +65,7 @@ func (rItr *reverseIterator) Error() error {
 }
 
 // Close implements Iterator.
-func (rItr *reverseIterator) Close() error {
+func (*reverseIterator) Close() error {
 	return nil
 }
 

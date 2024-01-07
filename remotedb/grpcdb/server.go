@@ -166,7 +166,7 @@ func (s *server) Iterator(query *protodb.Entity, dis protodb.DB_IteratorServer) 
 	return s.handleIterator(it, dis.Send)
 }
 
-func (s *server) handleIterator(it db.Iterator, sendFunc func(*protodb.Iterator) error) error {
+func (*server) handleIterator(it db.Iterator, sendFunc func(*protodb.Iterator) error) error {
 	for it.Valid() {
 		start, end := it.Domain()
 		key := it.Key()
@@ -211,7 +211,7 @@ func (s *server) BatchWriteSync(c context.Context, b *protodb.Batch) (*protodb.N
 	return s.batchWrite(c, b, true)
 }
 
-func (s *server) batchWrite(c context.Context, b *protodb.Batch, sync bool) (*protodb.Nothing, error) { //nolint:unparam
+func (s *server) batchWrite(c context.Context, b *protodb.Batch, batchSync bool) (*protodb.Nothing, error) { //nolint:unparam
 	bat := s.db.NewBatch()
 	defer bat.Close()
 	for _, op := range b.Ops {
@@ -228,7 +228,7 @@ func (s *server) batchWrite(c context.Context, b *protodb.Batch, sync bool) (*pr
 			}
 		}
 	}
-	if sync {
+	if batchSync {
 		err := bat.WriteSync()
 		if err != nil {
 			return nil, err

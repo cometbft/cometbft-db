@@ -60,7 +60,10 @@ func (b *batch) Write() error {
 		return fmt.Errorf("remoteDB.BatchWrite: %w", err)
 	}
 	// Make sure batch cannot be used afterwards. Callers should still call Close(), for errors.
-	b.Close()
+	err = b.Close()
+	if err != nil {
+		return fmt.Errorf("remoteDB.BatchWrite: %w", err)
+	}
 	return nil
 }
 
