@@ -215,15 +215,17 @@ func (db *PebbleDB) Print() error {
 }
 
 // Stats implements DB.
-func (*PebbleDB) Stats() map[string]string {
-	/*
-		keys := []string{"rocksdb.stats"}
-		stats := make(map[string]string, len(keys))
-		for _, key := range keys {
-			stats[key] = db.(key)
-		}
-	*/
-	return nil
+func (db *PebbleDB) Stats() map[string]string {
+	m := db.db.Metrics()
+	stats := make(map[string]string)
+
+	stats["BlockCacheSize"] = fmt.Sprintf("%d", m.BlockCache.Size)
+	stats["BlockCacheHits"] = fmt.Sprintf("%d", m.BlockCache.Hits)
+	stats["BlockCacheMisses"] = fmt.Sprintf("%d", m.BlockCache.Misses)
+	stats["MemTableSize"] = fmt.Sprintf("%d", m.MemTable.Size)
+	stats["Flushes"] = fmt.Sprintf("%d", m.Flush.Count)
+	stats["Compactions"] = fmt.Sprintf("%d", m.Compact.Count)
+	return stats
 }
 
 // NewBatch implements DB.
