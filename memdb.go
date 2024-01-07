@@ -16,7 +16,7 @@ const (
 func init() {
 	registerDBCreator(MemDBBackend, func(name, dir string) (DB, error) {
 		return NewMemDB(), nil
-	}, false)
+	})
 }
 
 // item is a btree.Item with byte slices as keys and values

@@ -22,7 +22,7 @@ func init() {
 		mdb.Set([]byte("u"), []byte{21})
 		mdb.Set([]byte("z"), []byte{26})
 		return NewPrefixDB(mdb, []byte("test/")), nil
-	}, false)
+	})
 }
 
 func cleanupDBDir(dir, name string) {
