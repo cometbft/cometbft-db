@@ -5,7 +5,6 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"time"
 )
 
 type goLevelDBBatch struct {

@@ -102,7 +102,7 @@ func (c *levelDBCollector) Collect(ch chan<- prometheus.Metric) {
 		totalLevelTablesCounts += float64(dbStats.LevelTablesCounts[i])
 		totalLevelRead += float64(dbStats.LevelRead[i])
 		totalLevelWrite += float64(dbStats.LevelWrite[i])
-		totalLevelDurations += float64(dbStats.LevelDurations[i].Seconds())
+		totalLevelDurations += dbStats.LevelDurations[i].Seconds()
 	}
 
 	stats["TotalLevelSizes"] = totalLevelSizes / 1048576.0

@@ -5,12 +5,11 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 func init() {
@@ -227,6 +226,7 @@ func (db *GoLevelDB) Compact(start, end []byte) error {
 	fmt.Println("Compacting")
 	return db.db.CompactRange(util.Range{Start: start, Limit: end})
 }
+
 func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
 
 	db.getDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
