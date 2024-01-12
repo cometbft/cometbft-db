@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"time"
@@ -64,9 +66,9 @@ func (b *goLevelDBBatch) write(sync bool) error {
 	start := time.Now()
 	defer func() {
 		if sync {
-			b.db.batchSyncDuration.Set(float64(time.Since(start).Milliseconds()))
+			b.db.batchSyncDuration.Observe(time.Since(start).Seconds())
 		} else {
-			b.db.batchDuration.Set(float64(time.Since(start).Milliseconds()))
+			b.db.batchDuration.Observe(time.Since(start).Seconds())
 		}
 	}()
 	err := b.db.db.Write(b.batch, &opt.WriteOptions{Sync: sync})

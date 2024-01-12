@@ -24,14 +24,15 @@ const PROMETHEUS_NAMESPACE = "cometbft_db"
 
 type GoLevelDB struct {
 	db *leveldb.DB
+
 	// All durations are reported in milliseconds.
-	getDuration        prometheus.Gauge
-	setDuration        prometheus.Gauge
-	setSyncDuration    prometheus.Gauge
-	deleteDuration     prometheus.Gauge
-	deleteSyncDuration prometheus.Gauge
-	batchDuration      prometheus.Gauge
-	batchSyncDuration  prometheus.Gauge
+	getDuration        prometheus.Histogram
+	setDuration        prometheus.Histogram
+	setSyncDuration    prometheus.Histogram
+	deleteDuration     prometheus.Histogram
+	deleteSyncDuration prometheus.Histogram
+	batchDuration      prometheus.Histogram
+	batchSyncDuration  prometheus.Histogram
 }
 
 var _ DB = (*GoLevelDB)(nil)
@@ -55,7 +56,6 @@ func NewGoLevelDBWithOpts(name string, dir string, o *opt.Options) (*GoLevelDB, 
 	database := &GoLevelDB{
 		db: db,
 	}
-
 	database.createPrometheusMetrics(name)
 	return database, nil
 }
@@ -67,7 +67,7 @@ func (db *GoLevelDB) Get(key []byte) ([]byte, error) {
 	}
 	start := time.Now()
 	res, err := db.db.Get(key, nil)
-	db.getDuration.Set(float64(time.Since(start).Milliseconds()))
+	db.getDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		if err == errors.ErrNotFound {
 			return nil, nil
@@ -96,7 +96,7 @@ func (db *GoLevelDB) Set(key []byte, value []byte) error {
 	}
 	start := time.Now()
 	err := db.db.Put(key, value, nil)
-	db.setDuration.Set(float64(time.Since(start).Milliseconds()))
+	db.setDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (db *GoLevelDB) SetSync(key []byte, value []byte) error {
 	}
 	start := time.Now()
 	err := db.db.Put(key, value, &opt.WriteOptions{Sync: true})
-	db.setSyncDuration.Set(float64(time.Since(start).Milliseconds()))
+	db.setSyncDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func (db *GoLevelDB) Delete(key []byte) error {
 	}
 	start := time.Now()
 	err := db.db.Delete(key, nil)
-	db.deleteDuration.Set(float64(time.Since(start).Milliseconds()))
+	db.deleteDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,9 @@ func (db *GoLevelDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
+	start := time.Now()
 	err := db.db.Delete(key, &opt.WriteOptions{Sync: true})
+	db.deleteSyncDuration.Observe(time.Since(start).Seconds())
 	if err != nil {
 		return err
 	}
@@ -226,53 +228,63 @@ func (db *GoLevelDB) Compact(start, end []byte) error {
 	return db.db.CompactRange(util.Range{Start: start, Limit: end})
 }
 func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
-	db.getDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+
+	db.getDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "get_duration_ms",
-		Help:      "The duration of the Get() operation in ms.",
+		Name:      "get_duration_s",
+		Help:      "The duration of the Get() operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.getDuration)
-	db.setDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+
+	db.setDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "set_duration_ms",
-		Help:      "The duration of the Set() operation in ms.",
+		Name:      "set_duration_s",
+		Help:      "The duration of the Get() operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.setDuration)
-	db.setSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+
+	db.setSyncDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "set_sync_duration_ms",
-		Help:      "The duration of the SetSync() operation in ms.",
+		Name:      "set_sync_duration_s",
+		Help:      "The duration of the SetSync() operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.setSyncDuration)
-	db.deleteDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+	db.deleteDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "delete_duration_ms",
-		Help:      "The duration of the Delete() operation in ms.",
+		Name:      "delete_duration_s",
+		Help:      "The duration of the Delete() operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.deleteDuration)
-	db.deleteSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+	db.deleteSyncDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "delete_sync_duration_ms",
-		Help:      "The duration of the DeleteSync() operation in ms.",
+		Name:      "delete_sync_duration_s",
+		Help:      "The duration of the DeleteSync() operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.deleteSyncDuration)
-	db.batchDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+	db.batchDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "batch_duration_ms",
-		Help:      "The duration of the batch#write operation in ms.",
+		Name:      "batch_duration_s",
+		Help:      "The duration of the batch#write operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.batchDuration)
-	db.batchSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
+	db.batchSyncDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: PROMETHEUS_NAMESPACE,
 		Subsystem: dbName,
-		Name:      "batch_sync_duration_ms",
-		Help:      "The duration of the batch#write(sync) operation in ms.",
+		Name:      "batch_sync_duration_s",
+		Help:      "The duration of the batch#write(sync) operation in s.",
+		Buckets:   prometheus.ExponentialBuckets(0.0002, 10, 5),
 	})
 	prometheus.MustRegister(db.batchSyncDuration)
 }
