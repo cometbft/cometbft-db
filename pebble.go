@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/cockroachdb/pebble/bloom"
 )
 
 // ForceSync
@@ -86,12 +85,14 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 func NewPebbleDBWithOpts(name string, dir string) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
 	opts := &pebble.Options{
-		Cache:        pebble.NewCache(1 << 31), // 2GB
-		MemTableSize: 1 << 31,                  // 2GB
-		Filters: map[string]pebble.FilterPolicy{
-			"bloom": bloom.FilterPolicy(100),
-		}, // 1000 bits per key, 10 hash functions
+		Cache:        pebble.NewCache(1 << 32), // 4GB
+		MemTableSize: 1 << 31,                  // 4GBå
 		MaxOpenFiles: 5000,
+		Experimental: pebble.ExperimentalOptions{
+			L0CompactionConcurrency: 4, // default is 1
+			L0SublevelCompaction:    true,
+			L0StopWritesThreshold:   1000,
+		},
 	}
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
