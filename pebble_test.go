@@ -60,8 +60,8 @@ func BenchmarkDB(b *testing.B) {
 	var variationCases []BenchmarkVariationsCase
 
 	// Define the range of keys and values
-	keys := []int{1e2, 1e3, 1e4, 1e5}
-	values := []int{1 << 11, 1 << 12, 1 << 13}
+	keys := []int{10000, 25000, 50000, 75000, 100000} // 10k, 100k - things we figure would happen in prod
+	values := []int{512, 1024, 2048, 4096}            // 2KB, 4KB, 8KB - things we figure would happen in prod
 
 	// Define the backends
 	backends := []BackendType{PebbleDBBackend, GoLevelDBBackend}
@@ -74,7 +74,7 @@ func BenchmarkDB(b *testing.B) {
 			}
 			for _, backend := range backends {
 				variationCases = append(variationCases, BenchmarkVariationsCase{
-					Name:      fmt.Sprintf("Keys_%de3_Values_%d", key, value),
+					Name:      fmt.Sprintf("Keys_%d_Values_%d", key, value),
 					Backend:   backend,
 					NumKeys:   key,
 					ValueSize: value,

@@ -57,7 +57,7 @@ const (
 
 	// minHandles is the minimum number of files handles to allocate to the open
 	// database files.
-	minHandles = 2048
+	minHandles = 8192
 )
 
 var (
