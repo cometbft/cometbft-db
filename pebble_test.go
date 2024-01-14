@@ -197,7 +197,6 @@ func BenchmarkDB(b *testing.B) {
 		fmt.Printf("WriteTime difference: %.2f%%\n", writeTimeDiff)
 		fmt.Printf("ConcurrentTime difference: %.2f%%\n", concurrentTimeDiff)
 	}
-
 }
 
 func benchmarkDBVariations(b *testing.B, db DB, numKeys int, valueSize int) BenchmarkResult {
