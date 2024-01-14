@@ -465,7 +465,7 @@ func (itr *pebbleDBIterator) assertIsValid() {
 }
 
 // helper function to reduce code duplication
-func (db *PebbleDB) set(key []byte, value []byte, sync pebble.WriteOptions) error {
+func (db *PebbleDB) set(key []byte, value []byte, pebbleSync pebble.WriteOptions) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
@@ -473,7 +473,7 @@ func (db *PebbleDB) set(key []byte, value []byte, sync pebble.WriteOptions) erro
 		return errValueNil
 	}
 
-	err := db.db.Set(key, value, &sync)
+	err := db.db.Set(key, value, &pebbleSync)
 	if err != nil {
 		return err
 	}
