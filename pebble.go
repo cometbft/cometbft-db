@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"runtime"
 	"sync"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/bloom"
 )
 
 // ForceSync
@@ -47,6 +49,17 @@ go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.
 $HOME/go/bin/sifnoded start --db_backend=pebbledb
 
 */
+
+const (
+	// minCache is the minimum amount of memory in megabytes to allocate to pebble
+	// read and write caching, split half and half.
+	minCache = 4096
+
+	// minHandles is the minimum number of files handles to allocate to the open
+	// database files.
+	minHandles = 2048
+)
+
 var (
 	ForceSync   = "0"
 	isForceSync = false
@@ -84,16 +97,40 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 
 func NewPebbleDBWithOpts(name string, dir string) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
+	// Two memory tables is configured which is identical to leveldb,
+	// including a frozen memory table and another live one.
+
+	memTableLimit := 2
+	cache := int(1 << 13)
+	if cache < minCache {
+		cache = minCache
+	}
+	handles := minHandles
+	memTableSize := cache * 1024 * 1024 / 2 / memTableLimit
 	opts := &pebble.Options{
-		Cache:        pebble.NewCache(1 << 32), // 4GB
-		MemTableSize: 1 << 31,                  // 4GBå
-		MaxOpenFiles: 5000,
-		Experimental: pebble.ExperimentalOptions{
-			L0CompactionConcurrency: 4, // default is 1
-			L0SublevelCompaction:    true,
-			L0StopWritesThreshold:   1000,
+		Cache:        pebble.NewCache(1 << 30), // 4GB
+		MaxOpenFiles: handles,
+		MemTableSize: uint64(memTableSize),
+
+		// MemTableStopWritesThreshold places a hard limit on the size
+		// of the existent MemTables(including the frozen one).
+		// Note, this must be the number of tables not the size of all memtables
+		// according to https://github.com/cockroachdb/pebble/blob/master/options.go#L738-L742
+		// and to https://github.com/cockroachdb/pebble/blob/master/db.go#L1892-L1903.
+		MemTableStopWritesThreshold: memTableLimit,
+		// The default compaction concurrency(1 thread),
+		// Here use all available CPUs for faster compaction.
+		MaxConcurrentCompactions: func() int { return runtime.NumCPU() * 3 }, // Use twice the number of CPUs, // Use twice the number of CPUs
+
+		// Per-level options. Options for at least one level must be specified. The
+		// options for the last level are used for all subsequent levels.
+		Levels: []pebble.LevelOptions{
+			{FilterPolicy: bloom.FilterPolicy(10)},
 		},
 	}
+
+	opts.Experimental.ReadSamplingMultiplier = -1 // borrowed from the ethereum pebble db
+
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
 		return nil, err
@@ -471,7 +508,7 @@ func (itr *pebbleDBIterator) assertIsValid() {
 	}
 }
 
-// helper function to reduce code duplication
+// set function with unnecessary dereference removed
 func (db *PebbleDB) set(key []byte, value []byte, pebbleSync pebble.WriteOptions) error {
 	if len(key) == 0 {
 		return errKeyEmpty
