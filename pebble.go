@@ -90,7 +90,6 @@ func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*Pebble
 
 // Get implements DB.
 func (db *PebbleDB) Get(key []byte) ([]byte, error) {
-	//fmt.Println("PebbleDB.Get")
 	if len(key) == 0 {
 		return nil, errKeyEmpty
 	}
