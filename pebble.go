@@ -463,7 +463,6 @@ func (itr *pebbleDBIterator) Error() error {
 
 // Close implements Iterator.
 func (itr *pebbleDBIterator) Close() error {
-	//fmt.Println("pebbleDBIterator.Close")
 	err := itr.source.Close()
 	if err != nil {
 		return err
