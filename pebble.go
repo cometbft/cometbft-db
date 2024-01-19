@@ -123,7 +123,6 @@ func (db *PebbleDB) Has(key []byte) (bool, error) {
 
 // Set implements DB.
 func (db *PebbleDB) Set(key []byte, value []byte) error {
-	//fmt.Println("PebbleDB.Set")
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
