@@ -10,8 +10,6 @@ ifeq (1,$(NON_INTERACTIVE))
 	DOCKER_TEST_INTERACTIVE_FLAGS :=
 endif
 
-export GO111MODULE = on
-
 all: lint test
 
 ### go tests
@@ -89,16 +87,6 @@ docker-test:
 tools:
 	go get -v $(GOTOOLS)
 .PHONY: tools
-
-%.pb.go: %.proto
-	## If you get the following error,
-	## "error while loading shared libraries: libprotobuf.so.14: cannot open shared object file: No such file or directory"
-	## See https://stackoverflow.com/a/25518702
-	## Note the $< here is substituted for the %.proto
-	## Note the $@ here is substituted for the %.pb.go
-	protoc $(INCLUDE) $< --gogo_out=Mgoogle/protobuf/timestamp.proto=github.com/golang/protobuf/ptypes/timestamp,plugins=grpc:../../..
-
-protoc_remotedb: remotedb/proto/defs.pb.go
 
 vulncheck:
 		@go run golang.org/x/vuln/cmd/govulncheck@latest ./...
