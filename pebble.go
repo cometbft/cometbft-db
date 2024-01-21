@@ -176,7 +176,6 @@ func (db *PebbleDB) Delete(key []byte) error {
 
 // DeleteSync implements DB.
 func (db PebbleDB) DeleteSync(key []byte) error {
-	//fmt.Println("PebbleDB.DeleteSync")
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
