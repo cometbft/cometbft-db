@@ -143,7 +143,6 @@ func (db *PebbleDB) Set(key []byte, value []byte) error {
 
 // SetSync implements DB.
 func (db *PebbleDB) SetSync(key []byte, value []byte) error {
-	//fmt.Println("PebbleDB.SetSync")
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
