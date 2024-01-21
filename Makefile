@@ -90,21 +90,6 @@ tools:
 	go get -v $(GOTOOLS)
 .PHONY: tools
 
-# generates certificates for TLS testing in remotedb
-gen_certs: clean_certs
-	certstrap init --common-name "cometbft.com" --passphrase ""
-	certstrap request-cert --common-name "remotedb" -ip "127.0.0.1" --passphrase ""
-	certstrap sign "remotedb" --CA "cometbft.com" --passphrase ""
-	mv out/remotedb.crt remotedb/test.crt
-	mv out/remotedb.key remotedb/test.key
-	rm -rf out
-.PHONY: gen_certs
-
-clean_certs:
-	rm -f db/remotedb/test.crt
-	rm -f db/remotedb/test.key
-.PHONY: clean_certs
-
 %.pb.go: %.proto
 	## If you get the following error,
 	## "error while loading shared libraries: libprotobuf.so.14: cannot open shared object file: No such file or directory"
