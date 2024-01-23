@@ -13,11 +13,12 @@ import (
 
 // ForceSync
 /*
-This is set at compile time. Could be 0 or 1, defaults is 0.
-It will force using Sync for NoSync functions (Set, Delete, Write)
+This is set at compile time. Could be 0 or 1, defaults is 1.
+It forces using Sync for NoSync functions (Set, Delete, Write)
 
-Used as a workaround for chain-upgrade issue: At the upgrade-block, the sdk will panic without flushing data to disk or
-closing dbs properly.
+Notice if ForceSync=0: performance will be better. However, there is an issue when upgrading.
+And the workaround (if using ForceSync=0):
+At the upgrade-block, the sdk will panic without flushing data to disk or closing dbs properly.
 
 Upgrade guide:
 	1. After seeing `UPGRADE "xxxx" NEED at height....`, restart current version with `-X github.com/tendermint/tm-db.ForceSync=1`
@@ -49,7 +50,7 @@ go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.
 $HOME/go/bin/sifnoded start --db_backend=pebbledb
 
 */
-var ForceSync = "0"
+var ForceSync = "1"
 var isForceSync = false
 
 func init() {
