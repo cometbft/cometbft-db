@@ -1,3 +1,6 @@
+//go:build pebbledb
+// +build pebbledb
+
 package db
 
 import (
@@ -8,7 +11,7 @@ import (
 	"github.com/cockroachdb/pebble"
 )
 
-// ForceSync is a a compile time flag to force using Sync for NoSync functions (Set, Delete, Write).
+// ForceSync
 /*
 This is set at compile time. Could be 0 or 1, defaults is 1.
 It forces using Sync for NoSync functions (Set, Delete, Write)
@@ -47,16 +50,14 @@ go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.
 $HOME/go/bin/sifnoded start --db_backend=pebbledb
 
 */
-var (
-	ForceSync   = "1"
-	isForceSync = false
-)
+var ForceSync = "1"
+var isForceSync = false
 
 func init() {
 	dbCreator := func(name string, dir string) (DB, error) {
 		return NewPebbleDB(name, dir)
 	}
-	registerDBCreator(PebbleDBBackend, dbCreator)
+	registerDBCreator(PebbleDBBackend, dbCreator, false)
 
 	if ForceSync == "1" {
 		isForceSync = true
@@ -111,11 +112,11 @@ func (db *PebbleDB) Has(key []byte) (bool, error) {
 	if len(key) == 0 {
 		return false, errKeyEmpty
 	}
-	bytesPeb, err := db.Get(key)
+	bytes, err := db.Get(key)
 	if err != nil {
 		return false, err
 	}
-	return bytesPeb != nil, nil
+	return bytes != nil, nil
 }
 
 // Set implements DB.
@@ -209,7 +210,7 @@ func (db *PebbleDB) Print() error {
 }
 
 // Stats implements DB.
-func (*PebbleDB) Stats() map[string]string {
+func (db *PebbleDB) Stats() map[string]string {
 	return nil
 }
 
@@ -250,6 +251,7 @@ func (db *PebbleDB) ReverseIterator(start, end []byte) (Iterator, error) {
 var _ Batch = (*pebbleDBBatch)(nil)
 
 type pebbleDBBatch struct {
+	db    *PebbleDB
 	batch *pebble.Batch
 }
 
@@ -272,8 +274,8 @@ func (b *pebbleDBBatch) Set(key, value []byte) error {
 	if b.batch == nil {
 		return errBatchClosed
 	}
-
-	return b.batch.Set(key, value, nil)
+	b.batch.Set(key, value, nil)
+	return nil
 }
 
 // Delete implements Batch.
@@ -284,8 +286,8 @@ func (b *pebbleDBBatch) Delete(key []byte) error {
 	if b.batch == nil {
 		return errBatchClosed
 	}
-
-	return b.batch.Delete(key, nil)
+	b.batch.Delete(key, nil)
+	return nil
 }
 
 // Write implements Batch.
