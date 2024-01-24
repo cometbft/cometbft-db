@@ -1,3 +1,6 @@
+//go:build pebbledb
+// +build pebbledb
+
 package db
 
 import (
@@ -9,6 +12,7 @@ import (
 )
 
 // ForceSync is a a compile time flag to force using Sync for NoSync functions (Set, Delete, Write).
+
 /*
 This is set at compile time. Could be 0 or 1, defaults is 1.
 It forces using Sync for NoSync functions (Set, Delete, Write)
@@ -56,7 +60,8 @@ func init() {
 	dbCreator := func(name string, dir string) (DB, error) {
 		return NewPebbleDB(name, dir)
 	}
-	registerDBCreator(PebbleDBBackend, dbCreator)
+
+	registerDBCreator(PebbleDBBackend, dbCreator, false)
 
 	if ForceSync == "1" {
 		isForceSync = true
@@ -111,6 +116,7 @@ func (db *PebbleDB) Has(key []byte) (bool, error) {
 	if len(key) == 0 {
 		return false, errKeyEmpty
 	}
+
 	bytesPeb, err := db.Get(key)
 	if err != nil {
 		return false, err
@@ -250,6 +256,7 @@ func (db *PebbleDB) ReverseIterator(start, end []byte) (Iterator, error) {
 var _ Batch = (*pebbleDBBatch)(nil)
 
 type pebbleDBBatch struct {
+	db    *PebbleDB
 	batch *pebble.Batch
 }
 

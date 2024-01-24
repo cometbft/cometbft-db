@@ -1,3 +1,6 @@
+//go:build pebbledb
+// +build pebbledb
+
 package db
 
 import (
@@ -40,6 +43,7 @@ func BenchmarkPebbleDBRandomReadsWrites(b *testing.B) {
 	defer func() {
 		err = db.Close()
 		require.NoError(b, err)
+
 		cleanupDBDir("", name)
 	}()
 
