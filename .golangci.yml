@@ -46,6 +46,8 @@ issues:
   max-same-issues: 10000
 
 linters-settings:
+  errcheck:
+    check-blank: true
   gci:
     sections:
       - standard # Standard section: captures all standard packages.
