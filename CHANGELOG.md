@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [Unreleased]
+
+*Jan 24, 2024*
+
+Added support for pebbledb v1.0.0
+
 ## v0.9.1
 
 *December 4, 2023*
