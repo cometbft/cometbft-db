@@ -10,11 +10,12 @@ import (
 
 // ForceSync
 /*
-This is set at compile time. Could be 0 or 1, defaults is 0.
-It will force using Sync for NoSync functions (Set, Delete, Write)
+This is set at compile time. Could be 0 or 1, defaults is 1.
+It forces using Sync for NoSync functions (Set, Delete, Write)
 
-Used as a workaround for chain-upgrade issue: At the upgrade-block, the sdk will panic without flushing data to disk or
-closing dbs properly.
+Notice if ForceSync=0: performance will be better. However, there is an issue when upgrading.
+And the workaround (if using ForceSync=0):
+At the upgrade-block, the sdk will panic without flushing data to disk or closing dbs properly.
 
 Upgrade guide:
 	1. After seeing `UPGRADE "xxxx" NEED at height....`, restart current version with `-X github.com/tendermint/tm-db.ForceSync=1`
@@ -46,10 +47,8 @@ go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.
 $HOME/go/bin/sifnoded start --db_backend=pebbledb
 
 */
-var (
-	ForceSync   = "0"
-	isForceSync = false
-)
+var ForceSync = "1"
+var isForceSync = false
 
 func init() {
 	dbCreator := func(name string, dir string) (DB, error) {
@@ -208,14 +207,7 @@ func (db *PebbleDB) Print() error {
 }
 
 // Stats implements DB.
-func (*PebbleDB) Stats() map[string]string {
-	/*
-		keys := []string{"rocksdb.stats"}
-		stats := make(map[string]string, len(keys))
-		for _, key := range keys {
-			stats[key] = db.(key)
-		}
-	*/
+func (db *PebbleDB) Stats() map[string]string {
 	return nil
 }
 
@@ -417,12 +409,16 @@ func (itr *pebbleDBIterator) Valid() bool {
 
 // Key implements Iterator.
 func (itr *pebbleDBIterator) Key() []byte {
+	// Key returns a copy of the current key.
+	// See https://github.com/cockroachdb/pebble/blob/v1.0.0/iterator.go#L2106
 	itr.assertIsValid()
 	return cp(itr.source.Key())
 }
 
 // Value implements Iterator.
 func (itr *pebbleDBIterator) Value() []byte {
+	// Value returns a copy of the current value.
+	// See https://github.com/cockroachdb/pebble/blob/v1.0.0/iterator.go#L2116
 	itr.assertIsValid()
 	return cp(itr.source.Value())
 }
