@@ -1,7 +1,5 @@
 # CHANGELOG
 
-## [Unreleased]
-
 *Jan 24, 2024*
 
 Added support for pebbledb v1.0.0
