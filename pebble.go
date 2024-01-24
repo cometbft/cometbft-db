@@ -8,7 +8,7 @@ import (
 	"github.com/cockroachdb/pebble"
 )
 
-// ForceSync
+// ForceSync is a a compile time flag to force using Sync for NoSync functions (Set, Delete, Write).
 /*
 This is set at compile time. Could be 0 or 1, defaults is 1.
 It forces using Sync for NoSync functions (Set, Delete, Write)
@@ -47,8 +47,10 @@ go install -tags pebbledb -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.
 $HOME/go/bin/sifnoded start --db_backend=pebbledb
 
 */
-var ForceSync = "1"
-var isForceSync = false
+var (
+	ForceSync   = "1"
+	isForceSync = false
+)
 
 func init() {
 	dbCreator := func(name string, dir string) (DB, error) {
@@ -207,7 +209,7 @@ func (db *PebbleDB) Print() error {
 }
 
 // Stats implements DB.
-func (db *PebbleDB) Stats() map[string]string {
+func (*PebbleDB) Stats() map[string]string {
 	return nil
 }
 
