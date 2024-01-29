@@ -136,6 +136,10 @@ func (db *PebbleDB) DB() *pebble.DB {
 	return db.db
 }
 
+func (db *PebbleDB) Compact(start, end []byte) error {
+	return db.db.Compact(start, end, true)
+}
+
 // Close implements DB.
 func (db PebbleDB) Close() error {
 	db.db.Close()
@@ -278,6 +282,12 @@ func (b *pebbleDBBatch) Close() error {
 	}
 
 	return nil
+}
+
+// Compact specified range
+// nil, nil will run compaction over the entire database
+func (b *pebbleDBBatch) Compat(start, end []byte) error {
+	return b.db.Compact(start, end)
 }
 
 type pebbleDBIterator struct {

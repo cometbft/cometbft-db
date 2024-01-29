@@ -3,14 +3,11 @@ package db
 import (
 	"fmt"
 	"path/filepath"
-	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 func init() {
@@ -20,18 +17,8 @@ func init() {
 	registerDBCreator(GoLevelDBBackend, dbCreator)
 }
 
-const PROMETHEUS_NAMESPACE = "cometbft_db"
-
 type GoLevelDB struct {
 	db *leveldb.DB
-	// All durations are reported in milliseconds.
-	getDuration        prometheus.Gauge
-	setDuration        prometheus.Gauge
-	setSyncDuration    prometheus.Gauge
-	deleteDuration     prometheus.Gauge
-	deleteSyncDuration prometheus.Gauge
-	batchDuration      prometheus.Gauge
-	batchSyncDuration  prometheus.Gauge
 }
 
 var _ DB = (*GoLevelDB)(nil)
@@ -47,16 +34,9 @@ func NewGoLevelDBWithOpts(name string, dir string, o *opt.Options) (*GoLevelDB, 
 		return nil, err
 	}
 
-	// Create a new levelDBCollector
-	collector := newLevelDBCollector(db, name)
-	// Register the collector with Prometheus
-	prometheus.MustRegister(collector)
-
 	database := &GoLevelDB{
 		db: db,
 	}
-
-	database.createPrometheusMetrics(name)
 	return database, nil
 }
 
@@ -65,9 +45,8 @@ func (db *GoLevelDB) Get(key []byte) ([]byte, error) {
 	if len(key) == 0 {
 		return nil, errKeyEmpty
 	}
-	start := time.Now()
 	res, err := db.db.Get(key, nil)
-	db.getDuration.Set(float64(time.Since(start).Milliseconds()))
+
 	if err != nil {
 		if err == errors.ErrNotFound {
 			return nil, nil
@@ -94,9 +73,8 @@ func (db *GoLevelDB) Set(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	start := time.Now()
 	err := db.db.Put(key, value, nil)
-	db.setDuration.Set(float64(time.Since(start).Milliseconds()))
+
 	if err != nil {
 		return err
 	}
@@ -111,9 +89,9 @@ func (db *GoLevelDB) SetSync(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	start := time.Now()
+
 	err := db.db.Put(key, value, &opt.WriteOptions{Sync: true})
-	db.setSyncDuration.Set(float64(time.Since(start).Milliseconds()))
+
 	if err != nil {
 		return err
 	}
@@ -125,9 +103,9 @@ func (db *GoLevelDB) Delete(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	start := time.Now()
+
 	err := db.db.Delete(key, nil)
-	db.deleteDuration.Set(float64(time.Since(start).Milliseconds()))
+
 	if err != nil {
 		return err
 	}
@@ -221,58 +199,7 @@ func (db *GoLevelDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	return newGoLevelDBIterator(itr, start, end, true), nil
 }
 
+// Compact range
 func (db *GoLevelDB) Compact(start, end []byte) error {
-	fmt.Println("Compacting")
 	return db.db.CompactRange(util.Range{Start: start, Limit: end})
-}
-func (db *GoLevelDB) createPrometheusMetrics(dbName string) {
-	db.getDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "get_duration_ms",
-		Help:      "The duration of the Get() operation in ms.",
-	})
-	prometheus.MustRegister(db.getDuration)
-	db.setDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "set_duration_ms",
-		Help:      "The duration of the Set() operation in ms.",
-	})
-	prometheus.MustRegister(db.setDuration)
-	db.setSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "set_sync_duration_ms",
-		Help:      "The duration of the SetSync() operation in ms.",
-	})
-	prometheus.MustRegister(db.setSyncDuration)
-	db.deleteDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "delete_duration_ms",
-		Help:      "The duration of the Delete() operation in ms.",
-	})
-	prometheus.MustRegister(db.deleteDuration)
-	db.deleteSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "delete_sync_duration_ms",
-		Help:      "The duration of the DeleteSync() operation in ms.",
-	})
-	prometheus.MustRegister(db.deleteSyncDuration)
-	db.batchDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "batch_duration_ms",
-		Help:      "The duration of the batch#write operation in ms.",
-	})
-	prometheus.MustRegister(db.batchDuration)
-	db.batchSyncDuration = prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: PROMETHEUS_NAMESPACE,
-		Subsystem: dbName,
-		Name:      "batch_sync_duration_ms",
-		Help:      "The duration of the batch#write(sync) operation in ms.",
-	})
-	prometheus.MustRegister(db.batchSyncDuration)
 }
