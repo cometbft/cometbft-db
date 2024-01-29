@@ -49,3 +49,8 @@ func (pb prefixDBBatch) WriteSync() error {
 func (pb prefixDBBatch) Close() error {
 	return pb.source.Close()
 }
+
+func (pb prefixDBBatch) Compact(start, end []byte) error {
+	// Not implemented
+	return nil
+}

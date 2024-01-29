@@ -81,3 +81,8 @@ func (b *rocksDBBatch) Close() error {
 	}
 	return nil
 }
+
+// Compact compacts a given range of keys in the DB
+func (b *rocksDBBatch) Compact(start, end []byte) error {
+	return b.db.Compact(start, end)
+}
