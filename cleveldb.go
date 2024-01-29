@@ -48,7 +48,6 @@ func NewCLevelDB(name string, dir string) (*CLevelDB, error) {
 		wo:     wo,
 		woSync: woSync,
 	}
-
 	return database, nil
 }
 
@@ -120,6 +119,13 @@ func (db *CLevelDB) DeleteSync(key []byte) error {
 	if err := db.db.Delete(db.woSync, key); err != nil {
 		return err
 	}
+	return nil
+}
+
+// CompactRange implements DB and compacts the given range of the DB
+func (db *CLevelDB) Compact(start, end []byte) error {
+	// CompactRange of clevelDB does not return anything
+	db.db.CompactRange(levigo.Range{Start: start, Limit: end})
 	return nil
 }
 
