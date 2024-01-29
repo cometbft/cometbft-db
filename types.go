@@ -97,6 +97,9 @@ type Batch interface {
 
 	// Close closes the batch. It is idempotent, but calls to other methods afterwards will error.
 	Close() error
+
+	// Compact explicitly
+	Compact(start, end []byte) error
 }
 
 // Iterator represents an iterator over a domain of keys. Callers must call Close when done.

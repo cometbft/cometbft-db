@@ -134,6 +134,8 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	value, err = db.Get([]byte("x"))
 	require.NoError(t, err)
 	require.Equal(t, []byte{}, value)
+
+	require.NoError(t, db.Compact(nil, nil))
 }
 
 func TestBackendsGetSetDelete(t *testing.T) {
@@ -417,6 +419,8 @@ func testDBBatch(t *testing.T, backend BackendType) {
 	require.Error(t, batch.Delete([]byte("a")))
 	require.Error(t, batch.Write())
 	require.Error(t, batch.WriteSync())
+
+	require.NoError(t, batch.Compact(nil, nil))
 }
 
 func assertKeyValues(t *testing.T, db DB, expect map[string][]byte) {
