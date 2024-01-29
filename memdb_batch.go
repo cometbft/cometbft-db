@@ -93,6 +93,6 @@ func (b *memDBBatch) Close() error {
 	return nil
 }
 
-func (b *memDBBatch) Compact(start, end []byte) error {
+func (*memDBBatch) Compact(start, end []byte) error {
 	return nil
 }

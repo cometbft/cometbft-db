@@ -86,6 +86,6 @@ func (b *boltDBBatch) Close() error {
 	return nil
 }
 
-func (b *boltDBBatch) Compact(start, end []byte) error {
+func (*boltDBBatch) Compact(start, end []byte) error {
 	return nil
 }
