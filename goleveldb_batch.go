@@ -81,5 +81,4 @@ func (b *goLevelDBBatch) Close() error {
 
 func (b *goLevelDBBatch) Compact(start, end []byte) error {
 	return b.db.db.CompactRange(util.Range{Start: start, Limit: end})
-
 }

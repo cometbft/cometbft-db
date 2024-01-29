@@ -46,7 +46,6 @@ func (db *GoLevelDB) Get(key []byte) ([]byte, error) {
 		return nil, errKeyEmpty
 	}
 	res, err := db.db.Get(key, nil)
-
 	if err != nil {
 		if err == errors.ErrNotFound {
 			return nil, nil
@@ -74,7 +73,6 @@ func (db *GoLevelDB) Set(key []byte, value []byte) error {
 		return errValueNil
 	}
 	err := db.db.Put(key, value, nil)
-
 	if err != nil {
 		return err
 	}
@@ -91,7 +89,6 @@ func (db *GoLevelDB) SetSync(key []byte, value []byte) error {
 	}
 
 	err := db.db.Put(key, value, &opt.WriteOptions{Sync: true})
-
 	if err != nil {
 		return err
 	}
@@ -105,7 +102,6 @@ func (db *GoLevelDB) Delete(key []byte) error {
 	}
 
 	err := db.db.Delete(key, nil)
-
 	if err != nil {
 		return err
 	}
