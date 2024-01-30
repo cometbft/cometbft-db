@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"time"
 )
 
 // Register a test backend for PrefixDB as well, with some unrelated junk data
@@ -135,11 +137,22 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	require.NoError(t, err)
 	require.Equal(t, []byte{}, value)
 
+	err = db.Compact(nil, nil)
+	if strings.Contains(string(backend), "pebbledb") {
+		// In pebble the strat and end will be the same so
+		// we expect an error
+		require.Error(t, err)
+	}
+
 	err = db.Set([]byte("y"), []byte{})
 	require.NoError(t, err)
 
 	err = db.Compact(nil, nil)
 	require.NoError(t, err)
+
+	if strings.Contains(string(backend), "pebbledb") {
+		time.Sleep(time.Second * 5)
+	}
 }
 
 func TestBackendsGetSetDelete(t *testing.T) {
@@ -425,6 +438,10 @@ func testDBBatch(t *testing.T, backend BackendType) {
 	require.Error(t, batch.WriteSync())
 
 	require.NoError(t, batch.Compact(nil, nil))
+
+	if strings.Contains(string(backend), "pebbledb") {
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func assertKeyValues(t *testing.T, db DB, expect map[string][]byte) {
