@@ -230,6 +230,10 @@ func (b *badgerDBBatch) WriteSync() error {
 	return withSync(b.db, b.Write())
 }
 
+func (*badgerDBBatch) Compact(start, end []byte) error {
+	return nil
+}
+
 func (b *badgerDBBatch) Close() error {
 	select {
 	case <-b.firstFlush: // a Flush after Cancel panics too
