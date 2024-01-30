@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 // Register a test backend for PrefixDB as well, with some unrelated junk data
@@ -139,7 +139,7 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 
 	err = db.Compact(nil, nil)
 	if strings.Contains(string(backend), "pebbledb") {
-		// In pebble the strat and end will be the same so
+		// In pebble the start and end will be the same so
 		// we expect an error
 		require.Error(t, err)
 	}
