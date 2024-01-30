@@ -137,6 +137,9 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 
 	err = db.Set([]byte("y"), []byte{})
 	require.NoError(t, err)
+
+	err = db.Compact(nil, nil)
+	require.NoError(t, err)
 }
 
 func TestBackendsGetSetDelete(t *testing.T) {
