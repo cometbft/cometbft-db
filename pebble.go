@@ -308,12 +308,6 @@ func (b *pebbleDBBatch) Close() error {
 	return nil
 }
 
-// Compact specified range
-// nil, nil will run compaction over the entire database
-func (b *pebbleDBBatch) Compact(start, end []byte) error {
-	return b.db.Compact(start, end)
-}
-
 type pebbleDBIterator struct {
 	source     *pebble.Iterator
 	start, end []byte

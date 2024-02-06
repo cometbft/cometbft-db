@@ -439,12 +439,6 @@ func testDBBatch(t *testing.T, backend BackendType) {
 	require.Error(t, batch.Delete([]byte("a")))
 	require.Error(t, batch.Write())
 	require.Error(t, batch.WriteSync())
-
-	require.NoError(t, batch.Compact(nil, nil))
-
-	if strings.Contains(string(backend), "pebbledb") {
-		time.Sleep(5 * time.Second)
-	}
 }
 
 func assertKeyValues(t *testing.T, db DB, expect map[string][]byte) {

@@ -92,7 +92,3 @@ func (b *memDBBatch) Close() error {
 	b.ops = nil
 	return nil
 }
-
-func (*memDBBatch) Compact(start, end []byte) error {
-	return nil
-}

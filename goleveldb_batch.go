@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 type goLevelDBBatch struct {
@@ -77,8 +76,4 @@ func (b *goLevelDBBatch) Close() error {
 		b.batch = nil
 	}
 	return nil
-}
-
-func (b *goLevelDBBatch) Compact(start, end []byte) error {
-	return b.db.db.CompactRange(util.Range{Start: start, Limit: end})
 }

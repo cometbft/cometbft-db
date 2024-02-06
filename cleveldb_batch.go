@@ -80,8 +80,3 @@ func (b *cLevelDBBatch) Close() error {
 	}
 	return nil
 }
-
-// Compact compacts given range of DB
-func (b *cLevelDBBatch) Compact(start, end []byte) error {
-	return b.db.Compact(start, end)
-}
