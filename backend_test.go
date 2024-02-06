@@ -151,6 +151,9 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	require.NoError(t, err)
 
 	if strings.Contains(string(backend), "pebbledb") {
+		// When running the test the folder can't be cleaned up and there
+		// is a panic on removing the tmp testing directories.
+		// The compaction process is slow to release the lock on the folder.
 		time.Sleep(time.Second * 5)
 	}
 }
