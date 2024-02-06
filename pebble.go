@@ -136,7 +136,7 @@ func (db *PebbleDB) DB() *pebble.DB {
 	return db.db
 }
 
-func (db *PebbleDB) Compact(start, end []byte) error {
+func (db *PebbleDB) Compact(start, end []byte) (err error) {
 	// Currently nil,nil is an invalid range in Pebble.
 	// This was taken from https://github.com/cockroachdb/pebble/issues/1474
 	// In case the start and end keys are the same
@@ -144,19 +144,21 @@ func (db *PebbleDB) Compact(start, end []byte) error {
 	if start != nil && end != nil {
 		return db.db.Compact(start, end, true)
 	}
-
 	iter := db.db.NewIter(nil)
-
+	defer func() {
+		err2 := iter.Close()
+		if err2 != nil {
+			err = err2
+		}
+	}()
 	if start == nil && iter.First() {
 		start = append(start, iter.Key()...)
 	}
 	if end == nil && iter.Last() {
 		end = append(end, iter.Key()...)
 	}
-	if err := iter.Close(); err != nil {
-		return err
-	}
-	return db.db.Compact(start, end, true)
+	err = db.db.Compact(start, end, true)
+	return
 }
 
 // Close implements DB.
