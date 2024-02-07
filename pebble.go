@@ -144,7 +144,10 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 	if start != nil && end != nil {
 		return db.db.Compact(start, end, true)
 	}
-	iter := db.db.NewIter(nil)
+	iter, err := db.db.NewIter(nil)
+	if err != nil {
+		return err
+	}
 	defer func() {
 		err2 := iter.Close()
 		if err2 != nil {
