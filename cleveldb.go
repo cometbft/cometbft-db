@@ -14,7 +14,7 @@ func init() {
 	dbCreator := func(name string, dir string) (DB, error) {
 		return NewCLevelDB(name, dir)
 	}
-	registerDBCreator(CLevelDBBackend, dbCreator, false)
+	registerDBCreator(CLevelDBBackend, dbCreator)
 }
 
 // CLevelDB uses the C LevelDB database via a Go wrapper.
@@ -120,6 +120,13 @@ func (db *CLevelDB) DeleteSync(key []byte) error {
 	if err := db.db.Delete(db.woSync, key); err != nil {
 		return err
 	}
+	return nil
+}
+
+// Compact implements DB and compacts the given range of the DB
+func (db *CLevelDB) Compact(start, end []byte) error {
+	// CompactRange of clevelDB does not return anything
+	db.db.CompactRange(levigo.Range{Start: start, Limit: end})
 	return nil
 }
 
