@@ -47,7 +47,6 @@ docker-test-image:
 		docker build -t $(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) .
 .PHONY: docker-test-image
 
-# Runs the same test as is executed in CI, but locally.
 
 
 tools:
