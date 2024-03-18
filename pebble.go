@@ -428,7 +428,6 @@ func (itr *pebbleDBIterator) Value() []byte {
 }
 
 // Next implements Iterator.
-// Next implements Iterator.
 func (itr *pebbleDBIterator) Next() {
 	// Before moving the iterator, we need to check if it's valid.
 	if !itr.Valid() {
