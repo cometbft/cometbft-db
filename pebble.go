@@ -1,3 +1,6 @@
+//go:build pebbledb
+// +build pebbledb
+
 package db
 
 import (
@@ -29,10 +32,6 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 }
 
 func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*PebbleDB, error) {
-	// configure pebble
-	opts.MemTableSize = 256 << 20           // 256 MB
-	opts.Cache = pebble.NewCache(256 << 20) // 256 MB
-	opts.LBaseMaxBytes = 64 << 20           // 64 MB
 	dbPath := filepath.Join(dir, name+".db")
 	opts.EnsureDefaults()
 	p, err := pebble.Open(dbPath, opts)
@@ -122,13 +121,13 @@ func (db *PebbleDB) Delete(key []byte) error {
 }
 
 // DeleteSync implements DB.
-func (db *PebbleDB) DeleteSync(key []byte) error {
+func (db PebbleDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
 	err := db.db.Delete(key, pebble.Sync)
 	if err != nil {
-		return err
+		return nil
 	}
 	return nil
 }
@@ -162,7 +161,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 		end = append(end, iter.Key()...)
 	}
 	err = db.db.Compact(start, end, true)
-	return err
+	return
 }
 
 // Close implements DB.
@@ -187,27 +186,8 @@ func (db *PebbleDB) Print() error {
 }
 
 // Stats implements DB.
-func (db *PebbleDB) Stats() map[string]string {
-	stats := make(map[string]string)
-	metrics := db.db.Metrics()
-
-	// Convert metrics to a map of strings
-	stats["BlockCacheSize"] = fmt.Sprintf("%d", metrics.BlockCache.Size)
-	stats["BlockCacheCount"] = fmt.Sprintf("%d", metrics.BlockCache.Count)
-	stats["BlockCacheHits"] = fmt.Sprintf("%d", metrics.BlockCache.Hits)
-	stats["BlockCacheMisses"] = fmt.Sprintf("%d", metrics.BlockCache.Misses)
-
-	stats["MemTableSize"] = fmt.Sprintf("%d", metrics.MemTable.Size)
-	stats["MemTableCount"] = fmt.Sprintf("%d", metrics.MemTable.Count)
-
-	stats["TableCacheSize"] = fmt.Sprintf("%d", metrics.TableCache.Size)
-	stats["TableCacheCount"] = fmt.Sprintf("%d", metrics.TableCache.Count)
-	stats["TableCacheHits"] = fmt.Sprintf("%d", metrics.TableCache.Hits)
-	stats["TableCacheMisses"] = fmt.Sprintf("%d", metrics.TableCache.Misses)
-
-	// Add more metrics as needed
-
-	return stats
+func (*PebbleDB) Stats() map[string]string {
+	return nil
 }
 
 // NewBatch implements DB.
@@ -373,8 +353,6 @@ func (itr *pebbleDBIterator) Domain() ([]byte, []byte) {
 }
 
 // Valid implements Iterator.
-
-// Valid implements Iterator.
 func (itr *pebbleDBIterator) Valid() bool {
 	// Once invalid, forever invalid.
 	if itr.isInvalid {
@@ -384,25 +362,31 @@ func (itr *pebbleDBIterator) Valid() bool {
 	// If source has error, invalid.
 	if err := itr.source.Error(); err != nil {
 		itr.isInvalid = true
+
 		return false
 	}
 
 	// If source is invalid, invalid.
 	if !itr.source.Valid() {
 		itr.isInvalid = true
+
 		return false
 	}
 
-	// If key is out of bounds, invalid.
+	// If key is end or past it, invalid.
+	start := itr.start
+	end := itr.end
 	key := itr.source.Key()
 	if itr.isReverse {
-		if itr.start != nil && bytes.Compare(key, itr.start) < 0 {
+		if start != nil && bytes.Compare(key, start) < 0 {
 			itr.isInvalid = true
+
 			return false
 		}
 	} else {
-		if itr.end != nil && bytes.Compare(itr.end, key) <= 0 {
+		if end != nil && bytes.Compare(end, key) <= 0 {
 			itr.isInvalid = true
+
 			return false
 		}
 	}
@@ -428,21 +412,12 @@ func (itr *pebbleDBIterator) Value() []byte {
 }
 
 // Next implements Iterator.
-func (itr *pebbleDBIterator) Next() {
-	// Before moving the iterator, we need to check if it's valid.
-	if !itr.Valid() {
-		panic("iterator is invalid")
-	}
-
+func (itr pebbleDBIterator) Next() {
+	itr.assertIsValid()
 	if itr.isReverse {
 		itr.source.Prev()
 	} else {
 		itr.source.Next()
-	}
-
-	// After moving the iterator, we need to check if it's still valid.
-	if !itr.source.Valid() {
-		itr.isInvalid = true
 	}
 }
 
