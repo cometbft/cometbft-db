@@ -1,6 +1,3 @@
-//go:build badgerdb
-// +build badgerdb
-
 package db
 
 import (
@@ -9,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dgraph-io/badger/v2"
+	"github.com/dgraph-io/badger/v4"
 )
 
 func init() { registerDBCreator(BadgerDBBackend, badgerDBCreator) }
