@@ -1,3 +1,6 @@
+//go:build pebbledb
+// +build pebbledb
+
 package db
 
 import (
@@ -158,7 +161,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 		end = append(end, iter.Key()...)
 	}
 	err = db.db.Compact(start, end, true)
-	return err
+	return
 }
 
 // Close implements DB.
