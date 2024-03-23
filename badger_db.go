@@ -125,7 +125,7 @@ func (b *BadgerDB) Close() error {
 	return b.db.Close()
 }
 
-func (b *BadgerDB) Print() error {
+func (*BadgerDB) Print() error {
 	return nil
 }
 
@@ -163,11 +163,11 @@ func (b *BadgerDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	return b.iteratorOpts(end, start, opts)
 }
 
-func (b *BadgerDB) Stats() map[string]string {
+func (*BadgerDB) Stats() map[string]string {
 	return nil
 }
 
-func (b *BadgerDB) Compact(start, end []byte) error {
+func (*BadgerDB) Compact(start, end []byte) error {
 	// Explicit compaction is not currently supported in badger
 	return nil
 }
