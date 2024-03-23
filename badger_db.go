@@ -1,6 +1,3 @@
-//go:build badgerdb
-// +build badgerdb
-
 package db
 
 import (
@@ -9,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dgraph-io/badger/v2"
+	"github.com/dgraph-io/badger/v4"
 )
 
 func init() { registerDBCreator(BadgerDBBackend, badgerDBCreator) }
@@ -128,7 +125,7 @@ func (b *BadgerDB) Close() error {
 	return b.db.Close()
 }
 
-func (b *BadgerDB) Print() error {
+func (*BadgerDB) Print() error {
 	return nil
 }
 
@@ -166,11 +163,11 @@ func (b *BadgerDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	return b.iteratorOpts(end, start, opts)
 }
 
-func (b *BadgerDB) Stats() map[string]string {
+func (*BadgerDB) Stats() map[string]string {
 	return nil
 }
 
-func (b *BadgerDB) Compact(start, end []byte) error {
+func (*BadgerDB) Compact(start, end []byte) error {
 	// Explicit compaction is not currently supported in badger
 	return nil
 }
