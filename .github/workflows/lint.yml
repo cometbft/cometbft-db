@@ -14,6 +14,9 @@ jobs:
     container: cometbft/cometbft-db-testing
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.2"
       - uses: golangci/golangci-lint-action@v4.0.0
         with:
           args: --timeout 10m
