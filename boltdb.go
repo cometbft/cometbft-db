@@ -1,6 +1,3 @@
-//go:build boltdb
-// +build boltdb
-
 package db
 
 import (
@@ -143,11 +140,11 @@ func (bdb *BoltDB) Print() error {
 	fmt.Printf("%v\n", stats)
 
 	err := bdb.db.View(func(tx *bbolt.Tx) error {
-		tx.Bucket(bucket).ForEach(func(k, v []byte) error {
+		err := tx.Bucket(bucket).ForEach(func(k, v []byte) error {
 			fmt.Printf("[%X]:\t[%X]\n", k, v)
 			return nil
 		})
-		return nil
+		return err
 	})
 	if err != nil {
 		return err

@@ -32,10 +32,10 @@ linters:
 
 issues:
   exclude-rules:
-    - text: 'differs only by capitalization to method'
+    - text: "differs only by capitalization to method"
       linters:
         - revive
-    - text: 'Use of weak random number generator'
+    - text: "Use of weak random number generator"
       linters:
         - gosec
     - linters:
@@ -109,7 +109,7 @@ linters-settings:
       - name: unhandled-error
         disabled: false
         arguments:
-          - 'fmt.Printf'
-          - 'fmt.Print'
-          - 'fmt.Println'
-          - 'myFunction'
+          - "fmt.Printf"
+          - "fmt.Print"
+          - "fmt.Println"
+          - "myFunction"
