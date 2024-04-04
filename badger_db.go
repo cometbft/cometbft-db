@@ -1,3 +1,6 @@
+//go:build badgerdb
+// +build badgerdb
+
 package db
 
 import (

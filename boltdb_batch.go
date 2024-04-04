@@ -1,3 +1,6 @@
+//go:build boltdb
+// +build boltdb
+
 package db
 
 import "go.etcd.io/bbolt"

@@ -54,7 +54,7 @@ func (db *SQLiteDB) Get(key []byte) ([]byte, error) {
 	if err == sql.ErrNoRows {
 		return []byte{}, nil // Return an empty byte slice instead of nil
 	} else if err != nil {
-		return []byte{}, nil // Return an empty byte slice instead of nil
+		return []byte{}, err // Return an empty byte slice instead of nil
 	}
 	return value, nil
 }
