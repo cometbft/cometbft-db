@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+
+	_ "modernc.org/sqlite" // this is the conventional way to import the sqlite driver when using modernc.org/sqlite
 )
 
 func init() {
