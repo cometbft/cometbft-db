@@ -43,9 +43,13 @@ test-pebble:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags pebbledb -v
 
+test-sqlite:
+	@echo "--> Running go test"
+	@go test $(PACKAGES) -tags sqlite -v
+
 test-all:
 	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,grocksdb_clean_link,badgerdb,pebbledb -v
+	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,grocksdb_clean_link,badgerdb,pebbledb,sqlite -v
 .PHONY: test-all
 
 test-all-with-coverage:
