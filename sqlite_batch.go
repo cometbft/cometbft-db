@@ -3,8 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
-	_ "github.com/glebarez/go-sqlite"
 )
 
 // ============ BATCH ===============
@@ -110,9 +108,8 @@ func (b *sqliteBatch) write(sync bool) error {
 
 	if sync {
 		return b.tx.Commit()
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // Close implements Batch.

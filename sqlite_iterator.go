@@ -3,11 +3,7 @@ package db
 import (
 	"bytes"
 	"database/sql"
-
-	_ "github.com/glebarez/go-sqlite"
 )
-
-// =========== ITERATOR ================
 
 var _ Iterator = (*sqliteIterator)(nil)
 

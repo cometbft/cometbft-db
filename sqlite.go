@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
-
-	_ "github.com/glebarez/go-sqlite"
 )
 
 func init() {
@@ -183,13 +181,17 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	stmt := "SELECT key, value FROM kv"
 	args := []interface{}{}
 
-	if end != nil {
-		stmt += " WHERE key <= ?"
-		args = append(args, end)
-	}
 	if start != nil {
-		stmt += " AND key > ?"
+		stmt += " WHERE key <= ?"
 		args = append(args, start)
+	}
+	if end != nil {
+		if start != nil {
+			stmt += " AND key > ?"
+		} else {
+			stmt += " WHERE key > ?"
+		}
+		args = append(args, end)
 	}
 	stmt += " ORDER BY key DESC"
 
@@ -198,7 +200,7 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 		return nil, err
 	}
 
-	return newSQLiteIterator(rows, end, start, true), nil
+	return newSQLiteIterator(rows, start, end, true), nil
 }
 
 // Compact implements DB.
