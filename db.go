@@ -40,6 +40,7 @@ const (
 	//   - EXPERIMENTAL
 	//   - use pebbledb build tag (go build -tags pebbledb)
 	PebbleDBBackend BackendType = "pebbledb"
+	SQLiteDBBackend BackendType = "sqlite"
 )
 
 type dbCreator func(name string, dir string) (DB, error)
