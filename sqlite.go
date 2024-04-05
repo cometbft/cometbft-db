@@ -183,17 +183,17 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	stmt := "SELECT key, value FROM kv"
 	args := []interface{}{}
 
-	if start != nil {
-		stmt += " WHERE key <= ?"
-		args = append(args, start)
-	}
 	if end != nil {
-		if start != nil {
-			stmt += " AND key > ?"
-		} else {
-			stmt += " WHERE key > ?"
-		}
+		stmt += " WHERE key < ?"
 		args = append(args, end)
+	}
+	if start != nil {
+		if end != nil {
+			stmt += " AND key >= ?"
+		} else {
+			stmt += " WHERE key >= ?"
+		}
+		args = append(args, start)
 	}
 	stmt += " ORDER BY key DESC"
 
