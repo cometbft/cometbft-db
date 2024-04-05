@@ -189,11 +189,7 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 		args = append(args, end)
 	}
 	if start != nil {
-		if len(args) > 0 {
-			stmt += " AND key > ?"
-		} else {
-			stmt += " WHERE key > ?"
-		}
+		stmt += " AND key > ?"
 		args = append(args, start)
 	}
 	stmt += " ORDER BY key DESC"
@@ -264,46 +260,44 @@ func (b *sqliteBatch) write(sync bool) error {
 	if b.tx == nil {
 		return fmt.Errorf("cannot write to closed batch")
 	}
-	tx, err := b.db.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			_ = tx.Rollback() // Ignore rollback error
-		} else {
-			// Commit the transaction if there were no errors
-			err = tx.Commit()
-		}
-	}()
 
 	for _, op := range b.ops {
 		switch op.opType {
 		case opTypeSet:
-			_, err = tx.Exec("INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)", op.key, op.value)
+			_, err := b.tx.Exec("INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)", op.key, op.value)
+			if err != nil {
+				return err
+			}
 		case opTypeDelete:
-			_, err = tx.Exec("DELETE FROM kv WHERE key = ?", op.key)
+			_, err := b.tx.Exec("DELETE FROM kv WHERE key = ?", op.key)
+			if err != nil {
+				return err
+			}
 		default:
-			err = fmt.Errorf("unknown operation type: %v", op.opType)
-		}
-		if err != nil {
-			return err
+			return fmt.Errorf("unknown operation type: %v", op.opType)
 		}
 	}
 
 	// Clear the batch after writing
 	b.ops = nil
 
-	return nil
+	if sync {
+		return b.tx.Commit()
+	} else {
+		return nil
+	}
 }
 
 // Close implements Batch.
 func (b *sqliteBatch) Close() error {
-	if len(b.ops) > 0 {
-		return fmt.Errorf("cannot close batch with pending operations")
+	if b.tx != nil {
+		err := b.tx.Rollback()
+		b.tx = nil
+		if err != nil {
+			return err
+		}
 	}
 	b.ops = nil
-	b.tx = nil
 	return nil
 }
 
@@ -418,15 +412,6 @@ func (itr *sqliteIterator) last() {
 	}
 }
 
-func (itr *sqliteIterator) seek(key []byte) {
-	for itr.rows.Next() {
-		itr.scanRow()
-		if bytes.Compare(itr.key, key) >= 0 {
-			break
-		}
-	}
-}
-
 func (itr *sqliteIterator) next() {
 	if itr.rows.Next() {
 		itr.scanRow()
@@ -436,15 +421,7 @@ func (itr *sqliteIterator) next() {
 }
 
 func (itr *sqliteIterator) prev() {
-	if itr.rows.Next() {
-		itr.scanRow()
-	} else {
-		itr.isInvalid = true
-	}
-}
-
-func (itr *sqliteIterator) valid() bool {
-	return !itr.isInvalid
+	itr.isInvalid = true
 }
 
 func (itr *sqliteIterator) scanRow() {
