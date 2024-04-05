@@ -55,7 +55,10 @@ func (b *sqliteBatch) Write() error {
 	b.tx = tx
 	err = b.write(false)
 	if err != nil {
-		_ = b.tx.Rollback()
+		rollErr := b.tx.Rollback()
+		if rollErr != nil {
+			return fmt.Errorf("write failed: %v, rollback failed: %v", err, rollErr)
+		}
 		b.tx = nil
 		return err
 	}
@@ -74,7 +77,10 @@ func (b *sqliteBatch) WriteSync() error {
 	b.tx = tx
 	err = b.write(true)
 	if err != nil {
-		_ = b.tx.Rollback()
+		rollErr := b.tx.Rollback()
+		if rollErr != nil {
+			return fmt.Errorf("write failed: %v, rollback failed: %v", err, rollErr)
+		}
 		b.tx = nil
 		return err
 	}
