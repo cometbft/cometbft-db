@@ -1,3 +1,6 @@
+//go:build sqlite
+// +build sqlite
+
 package db
 
 import (
@@ -33,9 +36,9 @@ func NewSQLiteDB(dbName, dir string) (*SQLiteDB, error) {
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS kv (
-		key BLOB PRIMARY KEY,
+		key BLOB PRIMARY KEY ON CONFLICT REPLACE,
 		value BLOB
-	)`)
+	) WITHOUT ROWID`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table: %w", err)
 	}
@@ -51,11 +54,13 @@ func (db *SQLiteDB) Get(key []byte) ([]byte, error) {
 
 	var value []byte
 	err := db.db.QueryRow("SELECT value FROM kv WHERE key = ?", key).Scan(&value)
-	if err == sql.ErrNoRows {
-		return []byte{}, nil // Return an empty byte slice instead of nil
-	} else if err != nil {
-		return []byte{}, err // Return an empty byte slice instead of nil
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
 	}
+
 	return value, nil
 }
 
@@ -174,17 +179,20 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 		return nil, errKeyEmpty
 	}
 
-	// Ensure the iterator excludes the start key and includes the end key.
 	stmt := "SELECT key, value FROM kv"
 	args := []interface{}{}
 
-	if end != nil {
-		stmt += " WHERE key <= ?"
-		args = append(args, end)
-	}
 	if start != nil {
-		stmt += " AND key > ?"
+		stmt += " WHERE key < ?"
 		args = append(args, start)
+	}
+	if end != nil {
+		if start != nil {
+			stmt += " AND key >= ?"
+		} else {
+			stmt += " WHERE key >= ?"
+		}
+		args = append(args, end)
 	}
 	stmt += " ORDER BY key DESC"
 
@@ -193,7 +201,7 @@ func (db *SQLiteDB) ReverseIterator(start, end []byte) (Iterator, error) {
 		return nil, err
 	}
 
-	return newSQLiteIterator(rows, start, end, true), nil
+	return newSQLiteIterator(rows, end, start, true), nil
 }
 
 // Compact implements DB.
