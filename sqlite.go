@@ -61,6 +61,12 @@ func (db *SQLiteDB) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	// sqlite.QueryRow().Scan() returns an empty byte slice if there is no value.
+	// Get() is expected to return nil in this case.
+	if len(value) == 0 {
+		return nil, nil
+	}
+
 	return value, nil
 }
 
