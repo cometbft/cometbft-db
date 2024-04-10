@@ -34,6 +34,8 @@ type BoltDB struct {
 var _ DB = (*BoltDB)(nil)
 
 // NewBoltDB returns a BoltDB with default options.
+//
+// Deprecated: boltdb is deprecated and will be removed in the future.
 func NewBoltDB(name, dir string) (DB, error) {
 	return NewBoltDBWithOpts(name, dir, bbolt.DefaultOptions)
 }
