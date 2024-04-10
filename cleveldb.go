@@ -28,6 +28,8 @@ type CLevelDB struct {
 var _ DB = (*CLevelDB)(nil)
 
 // NewCLevelDB creates a new CLevelDB.
+//
+// Deprecated: cleveldb is deprecated and will be removed in the future.
 func NewCLevelDB(name string, dir string) (*CLevelDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
 
