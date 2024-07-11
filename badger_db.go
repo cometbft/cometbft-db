@@ -290,8 +290,6 @@ func (i *badgerDBIterator) Key() []byte {
 }
 
 // Value implements Iterator.
-// The caller should not modify the contents of the returned slice.
-// Instead, the caller should make a copy and work on the copy.
 func (i *badgerDBIterator) Value() []byte {
 	if !i.Valid() {
 		panic("iterator is invalid")
