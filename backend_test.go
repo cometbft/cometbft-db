@@ -348,7 +348,8 @@ func verifyIterator(t *testing.T, itr Iterator, expected []int64, msg string) {
 
 	var list []int64
 	for itr.Valid() {
-		key := itr.Key()
+		key := make([]byte, len(itr.Key()))
+		copy(key, itr.Key())
 		list = append(list, bytes2Int64(key))
 		itr.Next()
 	}
