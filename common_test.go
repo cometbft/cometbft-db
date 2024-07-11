@@ -72,7 +72,9 @@ func checkKeyPanics(t *testing.T, itr Iterator) {
 
 func checkValuePanics(t *testing.T, itr Iterator) {
 	t.Helper()
-	assert.Panics(t, func() { itr.Value() })
+
+	msg := "checkValuePanics expected panic but didn't"
+	assert.Panics(t, func() { itr.Value() }, msg)
 }
 
 func newTempDB(t *testing.T, backend BackendType) (db DB, dbDir string) {
