@@ -397,18 +397,18 @@ func (itr *pebbleDBIterator) Valid() bool {
 
 // Key implements Iterator.
 // The caller should not modify the contents of the returned slice.
-// To work with the slice, make a copy and modify the copy instead.
+// Instead, the caller should make a copy and work on the copy.
 func (itr *pebbleDBIterator) Key() []byte {
 	itr.assertIsValid()
 	return itr.source.Key()
 }
 
 // Value implements Iterator.
+// The caller should not modify the contents of the returned slice.
+// Instead, the caller should make a copy and work on the copy.
 func (itr *pebbleDBIterator) Value() []byte {
-	// Value returns a copy of the current value.
-	// See https://github.com/cockroachdb/pebble/blob/v1.0.0/iterator.go#L2116
 	itr.assertIsValid()
-	return cp(itr.source.Value())
+	return itr.source.Value()
 }
 
 // Next implements Iterator.
