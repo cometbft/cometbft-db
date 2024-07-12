@@ -94,12 +94,14 @@ func (itr *rocksDBIterator) Valid() bool {
 }
 
 // Key implements Iterator.
+// The returned slice is a copy of the original data, therefore it is safe to modify.
 func (itr *rocksDBIterator) Key() []byte {
 	itr.assertIsValid()
 	return moveSliceToBytes(itr.source.Key())
 }
 
 // Value implements Iterator.
+// The returned slice is a copy of the original data, therefore it is safe to modify.
 func (itr *rocksDBIterator) Value() []byte {
 	itr.assertIsValid()
 	return moveSliceToBytes(itr.source.Value())
