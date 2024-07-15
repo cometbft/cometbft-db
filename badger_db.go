@@ -279,19 +279,23 @@ func (i *badgerDBIterator) Valid() bool {
 	return true
 }
 
+// Key implements Iterator.
+// The caller should not modify the contents of the returned slice.
+// Instead, the caller should make a copy and work on the copy.
 func (i *badgerDBIterator) Key() []byte {
 	if !i.Valid() {
 		panic("iterator is invalid")
 	}
-	// Note that we don't use KeyCopy, so this is only valid until the next
-	// call to Next.
-	return i.iter.Item().KeyCopy(nil)
+	return i.iter.Item().Key()
 }
 
+// Value implements Iterator.
+// The returned slice is a copy of the original data, therefore it is safe to modify.
 func (i *badgerDBIterator) Value() []byte {
 	if !i.Valid() {
 		panic("iterator is invalid")
 	}
+
 	val, err := i.iter.Item().ValueCopy(nil)
 	if err != nil {
 		i.lastErr = err

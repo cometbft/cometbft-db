@@ -348,7 +348,8 @@ func verifyIterator(t *testing.T, itr Iterator, expected []int64, msg string) {
 
 	var list []int64
 	for itr.Valid() {
-		key := itr.Key()
+		key := make([]byte, len(itr.Key()))
+		copy(key, itr.Key())
 		list = append(list, bytes2Int64(key))
 		itr.Next()
 	}
@@ -450,7 +451,10 @@ func assertKeyValues(t *testing.T, db DB, expect map[string][]byte) {
 	actual := make(map[string][]byte)
 	for ; iter.Valid(); iter.Next() {
 		require.NoError(t, iter.Error())
-		actual[string(iter.Key())] = iter.Value()
+
+		value := make([]byte, len(iter.Value()))
+		copy(value, iter.Value())
+		actual[string(iter.Key())] = value
 	}
 
 	assert.Equal(t, expect, actual)
