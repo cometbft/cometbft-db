@@ -14,7 +14,7 @@ jobs:
     container: cometbft/cometbft-db-testing
     steps:
      - name: Load Go version
-        run: echo "GO_VERSION=$(cat .github/go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+        run: echo "GO_VERSION=$(cat go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v5
         with:
