@@ -3,6 +3,5 @@
 
     If you don't change this message, or if this file is empty, the release
     will not be created. -->
-This release:
-- changes the contract of the Iterator Key() and Value() APIs. Namely, the caller is now responsible for creating a copy of their returned value if they want to modify it.
-- Bumps the Go compiler's version to 1.22.5.
+This release changes the contract of the Iterator Key() and Value() APIs.
+Namely, the caller is now responsible for creating a copy of their returned value if they want to modify it.
