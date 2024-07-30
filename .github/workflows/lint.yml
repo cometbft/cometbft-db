@@ -22,7 +22,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: golangci/golangci-lint-action@v6.0.1
+      - uses: golangci/golangci-lint-action@v6.1.0
         with:
           args: --timeout 10m
           version: latest
