@@ -2,6 +2,8 @@
 
 ## v0.13.0
 
+*Aug 2, 2024*
+
 This release:
 - changes the contract of the Iterator Key() and Value() APIs: the caller
 is now responsible for creating a copy of their returned value if they want to modify it.
