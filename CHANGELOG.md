@@ -1,17 +1,24 @@
 # CHANGELOG
 
+## v0.14.0
+
+*Aug 9, 2024*
+
+This release reinstates boltdb and cleveldb as deprecated backend types.
+Please not that we discourage using them, as we plan to drop them in a future release.
+
+### DEPENDENCIES
+
+- reinstate BoltDB and ClevelDB as backend DBs
+  ([\#177](https://github.com/cometbft/cometbft-db/pull/177))
+
 ## v0.13.0
 
 *Aug 2, 2024*
 
 This release:
-- changes the contract of the Iterator Key() and Value() APIs: the caller
-is now responsible for creating a copy of their returned value if they want to modify it.
-- bumps the Go version to 1.22.5 (from 1.22). Go 1.22.5 does not introduce new language
-features, therefore code using older version will still compile. However, we recommend to
-upgrade to the latest version(s) of Go as soon as possible.
-- removes support for boltDB and clevelDB.
-
+- changes the contract of the Iterator Key() and Value() APIs. Namely, the caller is now responsible for creating a copy of their returned value if they want to modify it.
+- removes support for boltDB and clevelDB, which were marked as deprecated in release v0.12.0.
 
 ### BREAKING CHANGES
 
@@ -146,3 +153,4 @@ effectively as of v0.6.6.
 For changes prior to the creation of this fork, please refer to the upstream
 [CHANGELOG.md](https://github.com/tendermint/tm-db/blob/774cdfe7e6b0a249b1144998d81a4de7b8037941/CHANGELOG.md)
 for v0.6.6 and earlier.
+
