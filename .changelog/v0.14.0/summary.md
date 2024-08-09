@@ -1,5 +1,5 @@
 *Aug 9, 2024*
 
 This release reinstates boltdb and cleveldb as deprecated backend types.
-Please not that we discourage using them, as we plan to drop them in a future release.
+Please note that we discourage the use of them, as we plan to discontinue support in a future release.
 
