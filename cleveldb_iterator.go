@@ -95,12 +95,16 @@ func (itr cLevelDBIterator) Valid() bool {
 }
 
 // Key implements Iterator.
+// The caller should not modify the contents of the returned slice.
+// Instead, the caller should make a copy and work on the copy.
 func (itr cLevelDBIterator) Key() []byte {
 	itr.assertIsValid()
 	return itr.source.Key()
 }
 
 // Value implements Iterator.
+// The caller should not modify the contents of the returned slice.
+// Instead, the caller should make a copy and work on the copy.
 func (itr cLevelDBIterator) Value() []byte {
 	itr.assertIsValid()
 	return itr.source.Value()
