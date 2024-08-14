@@ -3,7 +3,7 @@ module github.com/cometbft/cometbft-db
 go 1.22.5
 
 require (
-	github.com/cockroachdb/pebble v1.1.1
+	github.com/cockroachdb/pebble v1.1.2
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/google/btree v1.1.2
 	github.com/jmhodges/levigo v1.0.0
