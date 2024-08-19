@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.9.2
+
+*August 19, 2024*
+
+This release updates the v0.9.x release branch to Go 1.21.13 and updates a dependency
+to address a security vulnerability.
+
+### DEPENDENCIES
+
+- bumped go version to 1.21.13, updated depencency version to fix a
+  vulnerability ([\#182](https://github.com/cometbft/cometbft-db/pull/182))
+
 ## v0.9.1
 
 *December 4, 2023*
