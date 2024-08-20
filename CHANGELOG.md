@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.9.4
+
+*August 20, 2024*
+
+This release updates the dependencies to the latest patch versions.
+
+### DEPENDENCIES
+
+- update dependencies and add support for RocksDB 9.2.1
+  [\#186](https://github.com/cometbft/cometbft-db/pull/186)
+
 ## v0.9.3
 
 *August 19, 2024*
