@@ -14,7 +14,7 @@ func NewClient(serverAddr, serverCert string) (protodb.DBClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	cc, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(creds))
+	cc, err := grpc.NewClient(serverAddr, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		return nil, err
 	}
