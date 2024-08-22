@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/cockroachdb/pebble v1.1.2
 	github.com/dgraph-io/badger/v4 v4.2.0
-	github.com/google/btree v1.1.2
+	github.com/google/btree v1.1.3
 	github.com/jmhodges/levigo v1.0.0
 	github.com/linxGnu/grocksdb v1.9.3
 	github.com/stretchr/testify v1.9.0
