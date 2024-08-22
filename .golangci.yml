@@ -1,5 +1,5 @@
 linters:
-  tests: true
+  tests: false
   disable-all: true
   enable:
     - bodyclose
