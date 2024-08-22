@@ -186,5 +186,5 @@ func int642Bytes(i int64) []byte {
 }
 
 func bytes2Int64(buf []byte) int64 {
-	return int64(binary.BigEndian.Uint64(buf))
+	return int64(binary.BigEndian.Uint64(buf)) //nolint:gosec
 }
