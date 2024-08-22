@@ -14,6 +14,8 @@ require (
 	google.golang.org/grpc v1.65.0
 )
 
+replace github.com/syndtr/goleveldb => github.com/informalsystems/goleveldb v0.0.0-20240822155617-8112573615f8
+
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

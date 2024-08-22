@@ -1,5 +1,4 @@
 linters:
-  tests: true
   disable-all: true
   enable:
     - bodyclose
@@ -27,6 +26,13 @@ linters:
     - nolintlint
 
 issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - staticcheck
+        - nolintlint
+
 linters-settings:
   errcheck:
     check-blank: true
