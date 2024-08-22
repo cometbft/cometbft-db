@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.9.5
+
+*August 22, 2024*
+
+This release updates the dependencies to the latest patch versions.
+
+### DEPENDENCIES
+
+- cometbft-db now depends on a fork of goleveldb to fix a vulnerability imported
+  via dependencies ([\#191](https://github.com/cometbft/cometbft-db/pull/191))
+
 ## v0.9.4
 
 *August 20, 2024*
