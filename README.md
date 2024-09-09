@@ -18,7 +18,7 @@ recommend depending on this library for new projects.
 
 ## Minimum Go Version
 
-Go 1.22+
+Go 1.23+
 
 ## Supported Database Backends
 

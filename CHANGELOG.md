@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.15.0
+
+*September 9, 2024*
+
+This release bumps the Go version to 1.23.
+
+### BREAKING CHANGES
+
+- `[go/runtime]` Bump minimum Go version to v1.23
+  ([\#4039](https://github.com/cometbft/cometbft/issues/4039))
+
 ## v0.14.0
 
 *Aug 9, 2024*
