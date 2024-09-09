@@ -2,12 +2,18 @@
 #   make docker-test
 
 name: Test
+
 on:
+  pull_request:
+  merge_group:
   push:
     branches:
       - main
-  merge_group:
-  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   cleanup-runs:
     runs-on: ubuntu-latest

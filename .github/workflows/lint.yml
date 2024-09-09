@@ -1,10 +1,15 @@
 name: Lint
+
 on:
+  pull_request:
+  merge_group:
   push:
     branches:
       - main
-  pull_request:
-  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   golangci:
@@ -15,8 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load Go version
-        run: echo "GO_VERSION=$(cat .github/workflows/go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+      - run: echo "GO_VERSION=$(cat .github/workflows/go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v5
         with:
