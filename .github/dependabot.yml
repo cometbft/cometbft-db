@@ -3,14 +3,23 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
-      time: "11:00"
-    open-pull-requests-limit: 10
-  - package-ecosystem: gomod
-    directory: "/"
-    schedule:
-      interval: daily
-      time: "11:00"
+      interval: weekly
+    target-branch: "main"
     open-pull-requests-limit: 10
     labels:
       - dependencies
+      - automerge
+
+  ###################################
+  ##
+  ## Update All Go Dependencies
+
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    target-branch: "main"
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - automerge

@@ -1,20 +1,22 @@
-name: Lint
+name: Test fast (no changes to Dockerfile)
 
 on:
   pull_request:
+    paths-ignore:
+      - "tools/**"
   merge_group:
   push:
     branches:
       - main
+    paths-ignore:
+      - "tools/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  golangci:
-    # We need to run the linter on the same image we use for building, since it
-    # needs the C libraries installed for the dependencies to typecheck.
+  test-fast:
     runs-on: ubuntu-latest
     container: cometbft/cometbft-db-testing
     steps:
@@ -26,8 +28,10 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: golangci/golangci-lint-action@v6.1.0
+      - name: test & coverage report creation
+        run: |
+          NON_INTERACTIVE=1 make test-all-with-coverage
+
+      - uses: codecov/codecov-action@v4
         with:
-          args: --timeout 10m
-          version: latest
-          github-token: ${{ secrets.github_token }}
+          file: ./coverage.txt
