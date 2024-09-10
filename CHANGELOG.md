@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.14.1
+
+*September 10, 2024*
+
+This release bumps the Go version to 1.22.7.
+
+### DEPENDENCIES
+
+- `[go/runtime]` Bump minimum Go version to 1.22.7
+  ([\#197](https://github.com/cometbft/cometbft-db/issues/197))
+
 ## v0.14.0
 
 *Aug 9, 2024*
