@@ -18,7 +18,7 @@ RUN apt update \
        libleveldb-dev libleveldb1d
 
 FROM build AS install
-ARG ROCKSDB=9.2.3
+ARG ROCKSDB=9.2.1
 
 # Install Rocksdb
 RUN \
