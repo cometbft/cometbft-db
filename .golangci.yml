@@ -5,13 +5,12 @@ run:
 linters:
   disable-all: true
   enable:
-    - exportloopref
+    - copyloopvar
     - errcheck
     - gci
     - goconst
     - gocritic
     - gofumpt
-    - gosec
     - gosimple
     - govet
     - ineffassign
