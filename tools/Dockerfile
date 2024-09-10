@@ -7,7 +7,7 @@
 # updates here, merge the changes here first and let the image get updated (or
 # push a new version manually) before PRs that depend on them.
 
-FROM golang:1.21.13 AS build
+FROM golang:1.22 AS build
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
@@ -18,7 +18,7 @@ RUN apt update \
        libleveldb-dev libleveldb1d
 
 FROM build AS install
-ARG ROCKSDB=9.2.1
+ARG ROCKSDB=9.2.3
 
 # Install Rocksdb
 RUN \
