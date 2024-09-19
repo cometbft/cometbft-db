@@ -14,7 +14,7 @@ func cp(bz []byte) (ret []byte) {
 // Returns a slice of the same length (big endian)
 // except incremented by one.
 // Returns nil on overflow (e.g. if bz bytes are all 0xFF)
-// CONTRACT: len(bz) > 0
+// CONTRACT: len(bz) > 0.
 func cpIncr(bz []byte) (ret []byte) {
 	if len(bz) == 0 {
 		panic("cpIncr expects non-zero bz length")

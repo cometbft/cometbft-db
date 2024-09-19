@@ -28,7 +28,6 @@ MAIN_LOOP:
 				break MAIN_LOOP
 			}
 			val >>= 6
-
 		}
 	}
 

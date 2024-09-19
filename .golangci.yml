@@ -3,51 +3,66 @@ run:
   timeout: 10m
 
 linters:
-  disable-all: true
-  enable:
-    - copyloopvar
-    - errcheck
-    - gci
-    - goconst
-    - gocritic
-    - gofumpt
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - misspell
-    - nakedret
-    - staticcheck
-    - thelper
-    - typecheck
-    - stylecheck
-    - revive
-    - typecheck
-    - tenv
-    - unconvert
-    # Prefer unparam over revive's unused param. It is more thorough in its checking.
-    - unparam
-    - unused
-    - misspell
+  enable-all: true
+  disable:
+    - containedctx
+    - contextcheck
+    - cyclop
+    - dupword
+    - errorlint
+    - errname
+    - err113
+    - exhaustive
+    - exhaustruct
+    - execinquery
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - gocyclo
+    - godox
+    - gomnd
+    - interfacebloat
+    - intrange
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - nestif
+    - nilnil
+    - nlreturn
+    - nonamedreturns
+    - predeclared
+    - tagliatelle
+    - testifylint
+    - varnamelen
+    - wrapcheck
+    - wsl
 
 issues:
   exclude-rules:
-    - text: 'differs only by capitalization to method'
+    - path: _test\.go
       linters:
-        - revive
-    - text: 'Use of weak random number generator'
-      linters:
+        - gocritic
+        - gofmt
+        - goimport
         - gosec
-    - linters:
-        - staticcheck
-      text: "SA1019:" # silence errors on usage of deprecated funcs
-
+        - noctx
+        - paralleltest
+        - testpackage
+        - tparallel
   max-issues-per-linter: 10000
   max-same-issues: 10000
 
 linters-settings:
-  errcheck:
-    check-blank: true
+  dogsled:
+    max-blank-identifiers: 3
+  goconst:
+    ignore-tests: true
+  misspell:
+    locale: US
   gci:
     sections:
       - standard # Standard section: captures all standard packages.
@@ -56,14 +71,26 @@ linters-settings:
       - dot # dot imports
       - prefix(github.com/cometbft/cometbft-db)
     custom-order: true
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - github.com/google/btree
+      test:
+        files:
+          - "$test"
+        allow:
+          - $gostd
+          - github.com/stretchr/testify
+
   revive:
     enable-all-rules: true
-    # Do NOT whine about the following, full explanation found in:
-    # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#description-of-available-rules
     rules:
-      - name: use-any
-        disabled: true
-      - name: if-return
+      - name: comment-spacings # temporarily disabled
         disabled: true
       - name: max-public-structs
         disabled: true
@@ -72,6 +99,8 @@ linters-settings:
       - name: argument-limit
         disabled: true
       - name: cyclomatic
+        disabled: true
+      - name: deep-exit
         disabled: true
       - name: file-header
         disabled: true
@@ -87,29 +116,22 @@ linters-settings:
         disabled: true
       - name: empty-lines
         disabled: true
-      - name: banned-characters
-        disabled: true
-      - name: deep-exit
-        disabled: true
-      - name: confusing-results
-        disabled: true
-      - name: unused-parameter
+      - name: import-shadowing
         disabled: true
       - name: modifies-value-receiver
-        disabled: true
-      - name: early-return
         disabled: true
       - name: confusing-naming
         disabled: true
       - name: defer
         disabled: true
-      # Disabled in favour of unparam.
-      - name: unused-parameter
+      - name: unchecked-type-assertion
         disabled: true
       - name: unhandled-error
-        disabled: false
+        disabled: true
         arguments:
-          - 'fmt.Printf'
-          - 'fmt.Print'
-          - 'fmt.Println'
-          - 'myFunction'
+          - "fmt.Printf"
+          - "fmt.Print"
+          - "fmt.Println"
+  gosec:
+    excludes:
+      - G115

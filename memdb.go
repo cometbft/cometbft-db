@@ -3,6 +3,7 @@ package db
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/google/btree"
@@ -14,12 +15,12 @@ const (
 )
 
 func init() {
-	registerDBCreator(MemDBBackend, func(name, dir string) (DB, error) {
+	registerDBCreator(MemDBBackend, func(_, _ string) (DB, error) {
 		return NewMemDB(), nil
 	})
 }
 
-// item is a btree.Item with byte slices as keys and values
+// item is a btree.Item with byte slices as keys and values.
 type item struct {
 	key   []byte
 	value []byte
@@ -166,7 +167,7 @@ func (db *MemDB) Stats() map[string]string {
 
 	stats := make(map[string]string)
 	stats["database.type"] = "memDB"
-	stats["database.size"] = fmt.Sprintf("%d", db.btree.Len())
+	stats["database.size"] = strconv.Itoa(db.btree.Len())
 	return stats
 }
 
@@ -209,7 +210,7 @@ func (db *MemDB) ReverseIteratorNoMtx(start, end []byte) (Iterator, error) {
 	return newMemDBIteratorMtxChoice(db, start, end, true, false), nil
 }
 
-func (*MemDB) Compact(start, end []byte) error {
+func (*MemDB) Compact(_, _ []byte) error {
 	// No Compaction is supported for memDB and there is no point in supporting compaction for a memory DB
 	return nil
 }
