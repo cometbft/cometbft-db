@@ -79,6 +79,7 @@ linters-settings:
           - "!$test"
         allow:
           - $gostd
+          - github.com/cockroachdb/pebble
           - github.com/google/btree
       test:
         files:
