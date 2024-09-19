@@ -166,16 +166,6 @@ func TestBackendsGetSetDelete(t *testing.T) {
 	}
 }
 
-func TestGoLevelDBBackend(t *testing.T) {
-	name := fmt.Sprintf("test_%x", randStr(12))
-	db, err := NewDB(name, GoLevelDBBackend, "")
-	require.NoError(t, err)
-	defer cleanupDBDir("", name)
-
-	_, ok := db.(*GoLevelDB)
-	assert.True(t, ok)
-}
-
 func TestDBIterator(t *testing.T) {
 	for dbType := range backends {
 		t.Run(string(dbType), func(t *testing.T) {

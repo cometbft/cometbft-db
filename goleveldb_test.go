@@ -1,9 +1,13 @@
+//go:build goleveldb
+// +build goleveldb
+
 package db
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
@@ -42,4 +46,14 @@ func BenchmarkGoLevelDBRandomReadsWrites(b *testing.B) {
 	}()
 
 	benchmarkRandomReadsWrites(b, db)
+}
+
+func TestGoLevelDBBackend(t *testing.T) {
+	name := fmt.Sprintf("test_%x", randStr(12))
+	db, err := NewDB(name, GoLevelDBBackend, "")
+	require.NoError(t, err)
+	defer cleanupDBDir("", name)
+
+	_, ok := db.(*GoLevelDB)
+	assert.True(t, ok)
 }
