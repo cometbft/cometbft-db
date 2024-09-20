@@ -12,10 +12,10 @@ endif
 
 all: lint test
 
-#? test: Run memdb and pebbledb tests
+#? test: Run pure Go tests only
 test:
 	@echo "--> Running go test"
-	@go test $(PACKAGES)
+	@go test $(PACKAGES) -tags goleveldb,boltdb,badgerdb
 .PHONY: test
 
 #? test-goleveldb: Run goleveldb tests
