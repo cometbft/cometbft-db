@@ -12,42 +12,48 @@ endif
 
 all: lint test
 
-### go tests
-## By default this will only test memdb & goleveldb
+#? test: Run pure Go tests only
 test:
 	@echo "--> Running go test"
-	@go test $(PACKAGES) -v
+	@go test $(PACKAGES) -tags goleveldb,boltdb,badgerdb
 .PHONY: test
 
+#? test-goleveldb: Run goleveldb tests
+test-goleveldb:
+	@echo "--> Running go test"
+	@go test $(PACKAGES) -tags goleveldb -v
+.PHONY: test-goleveldb
+
+#? test-cleveldb: Run cleveldb tests
 test-cleveldb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags cleveldb -v
 .PHONY: test-cleveldb
 
+#? test-rocksdb: Run rocksdb tests
 test-rocksdb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags rocksdb -v
 .PHONY: test-rocksdb
 
+#? test-boltdb: Run boltdb tests
 test-boltdb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags boltdb -v
 .PHONY: test-boltdb
 
+#? test-badgerdb: Run badgerdb tests
 test-badgerdb:
 	@echo "--> Running go test"
 	@go test $(PACKAGES) -tags badgerdb -v
 .PHONY: test-badgerdb
 
-test-pebble:
+#? test-pebbledb: Run pebbledb tests
+test-pebbledb:
 	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags pebbledb -v
+	@go test $(PACKAGES) -v
 
-test-all:
-	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags cleveldb,boltdb,rocksdb,grocksdb_clean_link,badgerdb,pebbledb -v
-.PHONY: test-all
-
+#? test-all-with-coverage: Run all tests with coverage
 test-all-with-coverage:
 	@echo "--> Running go test for all databases, with coverage"
 	@CGO_ENABLED=1 go test ./... \
@@ -56,28 +62,31 @@ test-all-with-coverage:
 		-race \
 		-coverprofile=coverage.txt \
 		-covermode=atomic \
-		-tags=memdb,goleveldb,cleveldb,boltdb,rocksdb,grocksdb_clean_link,badgerdb,pebbledb \
+		-tags=goleveldb,cleveldb,boltdb,rocksdb,badgerdb\
 		-v
 .PHONY: test-all-with-coverage
 
+#? lint: Run linter
 lint:
 	@echo "--> Running linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 	@go mod verify
 .PHONY: lint
 
+#? format: Format the code
 format:
 	find . -name '*.go' -type f -not -path "*.git*" -not -name '*.pb.go' -not -name '*pb_test.go' | xargs gofmt -w -s
 	find . -name '*.go' -type f -not -path "*.git*"  -not -name '*.pb.go' -not -name '*pb_test.go' | xargs goimports -w
 .PHONY: format
 
+#? docker-test-image: Build the Docker test image
 docker-test-image:
 	@echo "--> Building Docker test image"
 	@cd tools && \
 		docker build -t $(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) .
 .PHONY: docker-test-image
 
-# Runs the same test as is executed in CI, but locally.
+#? docker-test: Run the same test as is executed in CI, but locally.
 docker-test:
 	@echo "--> Running all tests with all databases with Docker (interactive flags: \"$(DOCKER_TEST_INTERACTIVE_FLAGS)\")"
 	@docker run $(DOCKER_TEST_INTERACTIVE_FLAGS) --rm --name cometbft-db-test \
@@ -88,10 +97,12 @@ docker-test:
 		make test-all-with-coverage
 .PHONY: docker-test
 
+#? tools: Install tools
 tools:
 	go get -v $(GOTOOLS)
 .PHONY: tools
 
+#? vulncheck: Run go vuln check
 vulncheck:
 		@go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 .PHONY: vulncheck
