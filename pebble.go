@@ -1,6 +1,3 @@
-//go:build pebbledb
-// +build pebbledb
-
 package db
 
 import (
@@ -113,11 +110,7 @@ func (db *PebbleDB) Delete(key []byte) error {
 	}
 
 	wopts := pebble.NoSync
-	err := db.db.Delete(key, wopts)
-	if err != nil {
-		return err
-	}
-	return nil
+	return db.db.Delete(key, wopts)
 }
 
 // DeleteSync implements DB.
@@ -125,11 +118,7 @@ func (db PebbleDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	err := db.db.Delete(key, pebble.Sync)
-	if err != nil {
-		return nil
-	}
-	return nil
+	return db.db.Delete(key, pebble.Sync)
 }
 
 func (db *PebbleDB) DB() *pebble.DB {
@@ -160,8 +149,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 	if end == nil && iter.Last() {
 		end = append(end, iter.Key()...)
 	}
-	err = db.db.Compact(start, end, true)
-	return
+	return db.db.Compact(start, end, true)
 }
 
 // Close implements DB.

@@ -21,7 +21,7 @@ var (
 type DB interface {
 	// Get fetches the value of the given key, or nil if it does not exist.
 	// CONTRACT: key, value readonly []byte
-	Get([]byte) ([]byte, error)
+	Get(key []byte) ([]byte, error)
 
 	// Has checks if a key exists.
 	// CONTRACT: key, value readonly []byte
@@ -29,17 +29,17 @@ type DB interface {
 
 	// Set sets the value for the given key, replacing it if it already exists.
 	// CONTRACT: key, value readonly []byte
-	Set([]byte, []byte) error
+	Set(key []byte, value []byte) error
 
 	// SetSync sets the value for the given key, and flushes it to storage before returning.
-	SetSync([]byte, []byte) error
+	SetSync(key []byte, value []byte) error
 
 	// Delete deletes the key, or does nothing if the key does not exist.
 	// CONTRACT: key readonly []byte
-	Delete([]byte) error
+	Delete(key []byte) error
 
 	// DeleteSync deletes the key, and flushes the delete to storage before returning.
-	DeleteSync([]byte) error
+	DeleteSync(key []byte) error
 
 	// Iterator returns an iterator over a domain of keys, in ascending order. The caller must call
 	// Close when done. End is exclusive, and start must be less than end. A nil start iterates

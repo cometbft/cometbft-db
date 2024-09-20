@@ -106,7 +106,7 @@ func benchmarkRangeScans(b *testing.B, db DB, dbSize int64) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		start := rand.Int63n(dbSize - rangeSize) //nolint:gosec
+		start := rand.Int63n(dbSize - rangeSize)
 		end := start + rangeSize
 		iter, err := db.Iterator(int642Bytes(start), int642Bytes(end))
 		require.NoError(b, err)
@@ -136,7 +136,7 @@ func benchmarkRandomReadsWrites(b *testing.B, db DB) {
 	for i := 0; i < b.N; i++ {
 		// Write something
 		{
-			idx := rand.Int63n(numItems) //nolint:gosec
+			idx := rand.Int63n(numItems)
 			internal[idx]++
 			val := internal[idx]
 			idxBytes := int642Bytes(idx)
@@ -150,7 +150,7 @@ func benchmarkRandomReadsWrites(b *testing.B, db DB) {
 
 		// Read something
 		{
-			idx := rand.Int63n(numItems) //nolint:gosec
+			idx := rand.Int63n(numItems)
 			valExp := internal[idx]
 			idxBytes := int642Bytes(idx)
 			valBytes, err := db.Get(idxBytes)
@@ -175,7 +175,6 @@ func benchmarkRandomReadsWrites(b *testing.B, db DB) {
 				}
 			}
 		}
-
 	}
 }
 
@@ -186,5 +185,5 @@ func int642Bytes(i int64) []byte {
 }
 
 func bytes2Int64(buf []byte) int64 {
-	return int64(binary.BigEndian.Uint64(buf)) //nolint:gosec
+	return int64(binary.BigEndian.Uint64(buf))
 }

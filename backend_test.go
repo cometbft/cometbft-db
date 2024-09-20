@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Register a test backend for PrefixDB as well, with some unrelated junk data
+// Register a test backend for PrefixDB as well, with some unrelated junk data.
 func init() {
 	//nolint: errcheck, revive // probably should check errors?
 	registerDBCreator("prefixdb", func(name, dir string) (DB, error) {
@@ -164,16 +164,6 @@ func TestBackendsGetSetDelete(t *testing.T) {
 			testBackendGetSetDelete(t, dbType)
 		})
 	}
-}
-
-func TestGoLevelDBBackend(t *testing.T) {
-	name := fmt.Sprintf("test_%x", randStr(12))
-	db, err := NewDB(name, GoLevelDBBackend, "")
-	require.NoError(t, err)
-	defer cleanupDBDir("", name)
-
-	_, ok := db.(*GoLevelDB)
-	assert.True(t, ok)
 }
 
 func TestDBIterator(t *testing.T) {
