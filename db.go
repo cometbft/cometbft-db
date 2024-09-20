@@ -31,7 +31,7 @@ const (
 	//   - pure go
 	//   - use boltdb build tag (go build -tags boltdb)
 	BoltDBBackend BackendType = "boltdb"
-	// RocksDBBackend represents rocksdb (uses github.com/tecbot/gorocksdb)
+	// RocksDBBackend represents rocksdb (uses https://github.com/linxGnu/grocksdb)
 	//   - requires gcc
 	//   - use rocksdb build tag (go build -tags rocksdb)
 	RocksDBBackend BackendType = "rocksdb"
