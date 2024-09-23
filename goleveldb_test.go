@@ -1,6 +1,3 @@
-//go:build goleveldb
-// +build goleveldb
-
 package db
 
 import (
