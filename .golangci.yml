@@ -81,12 +81,14 @@ linters-settings:
           - $gostd
           - github.com/cockroachdb/pebble
           - github.com/google/btree
+          - github.com/syndtr/goleveldb/leveldb
       test:
         files:
           - "$test"
         allow:
           - $gostd
           - github.com/stretchr/testify
+          - github.com/syndtr/goleveldb/leveldb/opt
 
   revive:
     enable-all-rules: true
