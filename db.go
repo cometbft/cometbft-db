@@ -14,7 +14,6 @@ const (
 	//   - UNMAINTANED
 	//   - pure go
 	//   - stable
-	//   - use goleveldb build tag (go build -tags goleveldb)
 	GoLevelDBBackend BackendType = "goleveldb"
 	// CLevelDBBackend represents cleveldb (uses levigo wrapper)
 	//   - DEPRECATED
