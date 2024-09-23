@@ -1,6 +1,3 @@
-//go:build goleveldb
-// +build goleveldb
-
 package db
 
 import (
@@ -31,7 +28,7 @@ func NewGoLevelDB(name string, dir string) (*GoLevelDB, error) {
 }
 
 func NewGoLevelDBWithOpts(name string, dir string, o *opt.Options) (*GoLevelDB, error) {
-	dbPath := filepath.Join(dir, name+".db") //nolint:goconst
+	dbPath := filepath.Join(dir, name+".db")
 	db, err := leveldb.OpenFile(dbPath, o)
 	if err != nil {
 		return nil, err
@@ -129,10 +126,7 @@ func (db *GoLevelDB) DB() *leveldb.DB {
 
 // Close implements DB.
 func (db *GoLevelDB) Close() error {
-	if err := db.db.Close(); err != nil {
-		return err
-	}
-	return nil
+	return db.db.Close()
 }
 
 // Print implements DB.
@@ -198,7 +192,7 @@ func (db *GoLevelDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	return newGoLevelDBIterator(itr, start, end, true), nil
 }
 
-// Compact range
+// Compact range.
 func (db *GoLevelDB) Compact(start, end []byte) error {
 	return db.db.CompactRange(util.Range{Start: start, Limit: end})
 }

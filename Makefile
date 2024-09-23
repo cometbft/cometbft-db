@@ -15,14 +15,8 @@ all: lint test
 #? test: Run pure Go tests only
 test:
 	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags goleveldb,boltdb,badgerdb
+	@go test $(PACKAGES) -tags boltdb,badgerdb
 .PHONY: test
-
-#? test-goleveldb: Run goleveldb tests
-test-goleveldb:
-	@echo "--> Running go test"
-	@go test $(PACKAGES) -tags goleveldb -v
-.PHONY: test-goleveldb
 
 #? test-cleveldb: Run cleveldb tests
 test-cleveldb:
@@ -62,7 +56,7 @@ test-all-with-coverage:
 		-race \
 		-coverprofile=coverage.txt \
 		-covermode=atomic \
-		-tags=goleveldb,cleveldb,boltdb,rocksdb,badgerdb\
+		-tags=cleveldb,boltdb,rocksdb,badgerdb\
 		-v
 .PHONY: test-all-with-coverage
 
