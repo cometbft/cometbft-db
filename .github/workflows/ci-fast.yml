@@ -32,6 +32,6 @@ jobs:
         run: |
           NON_INTERACTIVE=1 make test-all-with-coverage
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           file: ./coverage.txt
