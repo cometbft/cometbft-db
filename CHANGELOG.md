@@ -31,6 +31,11 @@ This release bumps the Go version to 1.23.
 - `[go/runtime]` Bump minimum Go version to v1.23
   ([\#4039](https://github.com/cometbft/cometbft/issues/4039))
 
+### DEPENDENCIES
+
+- Use RocksDB 9, testing with v9.3.1
+  ([\#189](https://github.com/cometbft/cometbft-db/pull/189))
+
 ## v0.14.0
 
 *Aug 9, 2024*
