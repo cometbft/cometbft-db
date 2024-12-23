@@ -7,7 +7,7 @@ require (
 	github.com/dgraph-io/badger/v4 v4.3.1
 	github.com/google/btree v1.1.3
 	github.com/jmhodges/levigo v1.0.0
-	github.com/linxGnu/grocksdb v1.9.3
+	github.com/linxGnu/grocksdb v1.9.8
 	github.com/stretchr/testify v1.10.0
 	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca
 	go.etcd.io/bbolt v1.3.11
