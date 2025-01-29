@@ -9,12 +9,11 @@ linters:
     - contextcheck
     - cyclop
     - dupword
-    - errorlint
-    - errname
     - err113
+    - errname
+    - errorlint
     - exhaustive
     - exhaustruct
-    - execinquery
     - forbidigo
     - forcetypeassert
     - funlen
@@ -23,7 +22,6 @@ linters:
     - gocognit
     - gocyclo
     - godox
-    - gomnd
     - interfacebloat
     - intrange
     - ireturn
@@ -35,8 +33,10 @@ linters:
     - nlreturn
     - nonamedreturns
     - predeclared
+    - recvcheck
     - tagliatelle
     - testifylint
+    - usetesting
     - varnamelen
     - wrapcheck
     - wsl
