@@ -18,7 +18,8 @@ RUN apt update \
     && apt install -y \
        libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
        make tar wget build-essential \
-       libleveldb-dev libleveldb1d
+       libleveldb-dev libleveldb1d \
+       gcc g++
 
 FROM build AS install
 ARG ROCKSDB=9.8.4
