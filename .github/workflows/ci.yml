@@ -1,25 +1,57 @@
-# To run locally:
-#   make docker-test
-
-name: Test
+name: Test fast (no changes to Dockerfile)
 
 on:
   pull_request:
-    paths:
-      - tools/Dockerfile
   merge_group:
   push:
     branches:
       - main
-    paths:
-      - tools/Dockerfile
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  Test:
+  check-container:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - name: Check if Docker image exists
+        id: check
+        run: |
+          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.2 &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+  test-fast:
+    needs: check-container
+    if: needs.check-container.outputs.exists == 'true'
+    runs-on: ubuntu-latest
+    container: cometbft/cometbft-db-testing:v1.0.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Git Safe Directory
+        run: git config --global --add safe.directory /__w/cometbft-db/cometbft-db
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: test & coverage report creation
+        run: |
+          NON_INTERACTIVE=1 make test-all-with-coverage
+
+      - uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.txt
+
+  test-slow:
+    needs: check-container
+    if: needs.check-container.outputs.exists == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
