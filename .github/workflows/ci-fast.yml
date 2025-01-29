@@ -2,14 +2,10 @@ name: Test fast (no changes to Dockerfile)
 
 on:
   pull_request:
-    paths-ignore:
-      - "tools/**"
   merge_group:
   push:
     branches:
       - main
-    paths-ignore:
-      - "tools/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,16 +18,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Configure Git Safe Directory
+        run: git config --global --add safe.directory /__w/cometbft-db/cometbft-db
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            tools:
+              - "tools/**"
+
       - run: echo "GO_VERSION=$(cat .github/workflows/go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
+        if: steps.filter.outputs.tools == 'false'
 
       - uses: actions/setup-go@v5
+        if: steps.filter.outputs.tools == 'false'
         with:
           go-version: ${{ env.GO_VERSION }}
 
       - name: test & coverage report creation
+        if: steps.filter.outputs.tools == 'false'
         run: |
           NON_INTERACTIVE=1 make test-all-with-coverage
 
       - uses: codecov/codecov-action@v4
+        if: steps.filter.outputs.tools == 'false'
         with:
           file: ./coverage.txt
