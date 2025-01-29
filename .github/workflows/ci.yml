@@ -1,4 +1,4 @@
-name: Test
+name: Test fast (no changes to Dockerfile)
 
 on:
   pull_request:
@@ -27,7 +27,6 @@ jobs:
           fi
 
   test-fast:
-    name: Test fast (no changes to Dockerfile)
     needs: check-container
     if: needs.check-container.outputs.exists == 'true'
     runs-on: ubuntu-latest
@@ -51,7 +50,6 @@ jobs:
           file: ./coverage.txt
 
   test-slow:
-    name: Test slow (changes to Dockerfile)
     needs: check-container
     if: needs.check-container.outputs.exists == 'false'
     runs-on: ubuntu-latest
