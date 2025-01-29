@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.0.2
+
+*January 29, 2025*
+
+This release bumps the Go version to 1.23.5.
+
 ## v1.0.1
 
 *September 23, 2024*

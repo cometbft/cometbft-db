@@ -7,6 +7,9 @@
 # updates here, merge the changes here first and let the image get updated (or
 # push a new version manually) before PRs that depend on them.
 
+# PLEASE BUMP THE VERSION OF THE IMAGE IN `.github/workflows/ci.yml` WHEN YOU
+# MODIFY THIS FILE.
+
 FROM golang:1.23.5 AS build
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
