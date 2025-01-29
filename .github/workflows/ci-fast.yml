@@ -2,14 +2,10 @@ name: Test fast (no changes to Dockerfile)
 
 on:
   pull_request:
-    paths-ignore:
-      - "tools/**"
   merge_group:
   push:
     branches:
       - main
-    paths-ignore:
-      - "tools/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,6 +17,13 @@ jobs:
     container: cometbft/cometbft-db-testing
     steps:
       - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            code:
+              - "!tools/**"
 
       - run: echo "GO_VERSION=$(cat .github/workflows/go-version.env | grep GO_VERSION | cut -d '=' -f2)" >> $GITHUB_ENV
 
