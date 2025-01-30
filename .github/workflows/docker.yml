@@ -12,6 +12,11 @@
 name: Docker testing image
 on:
   workflow_dispatch:  # allow running workflow manually
+    inputs:
+      refName:
+        description: 'Git ref name'
+        required: true
+        default: 'main'
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"               # Push events to matching v*, i.e. v1.0, v20.15.10
@@ -43,4 +48,4 @@ jobs:
           push: true
           tags: |
             cometbft/cometbft-db-testing:latest
-            cometbft/cometbft-db-testing:${{ github.ref_name }}
+            cometbft/cometbft-db-testing:${{ github.event.inputs.refName }}
