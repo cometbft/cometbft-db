@@ -12,6 +12,11 @@
 name: Docker testing image
 on:
   workflow_dispatch:
+    inputs:
+      refName:
+        description: 'Git ref name'
+        required: true
+        default: 'v0.14.x'
   push:
     branches:
       - main
@@ -61,4 +66,6 @@ jobs:
           file: ./tools/Dockerfile
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.prep.outputs.tags }}
+          tags: |
+            ${{ steps.prep.outputs.tags }}
+            cometbft/cometbft-db-testing:${{ github.event.inputs.refName }}
