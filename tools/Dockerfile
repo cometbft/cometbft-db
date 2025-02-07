@@ -10,7 +10,7 @@
 # PLEASE BUMP THE VERSION OF THE IMAGE IN `.github/workflows/ci.yml` WHEN YOU
 # MODIFY THIS FILE.
 
-FROM golang:1.23.5 AS build
+FROM golang:1.23.5
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
@@ -27,8 +27,8 @@ RUN \
   wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
-  && DEBUG_LEVEL=0 make -j$(nproc) shared_lib \
-  && make install \
+  && DEBUG_LEVEL=0 make shared_lib \
+  && make install-shared \
   && ldconfig \
   && cd .. \
   && rm -rf v${ROCKSDB}.tar.gz rocksdb-${ROCKSDB}
