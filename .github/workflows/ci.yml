@@ -61,13 +61,20 @@ jobs:
         with:
           driver: docker
 
-      - name: Build Docker image
+      - name: Build Docker image (arm64) to ensure it works
+        uses: docker/build-push-action@v6
+        with:
+          context: ./tools
+          file: ./tools/Dockerfile
+          platforms: linux/arm64
+
+      - name: Build Docker image (amd64) to be used in the next step
         uses: docker/build-push-action@v6
         with:
           context: ./tools
           file: ./tools/Dockerfile
           tags: "cometbft/cometbft-db-testing:latest"
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           load: true
 
       - name: test & coverage report creation
