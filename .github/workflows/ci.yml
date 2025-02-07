@@ -20,7 +20,7 @@ jobs:
       - name: Check if Docker image exists
         id: check
         run: |
-          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.2 &>/dev/null; then
+          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.3 &>/dev/null; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -30,7 +30,7 @@ jobs:
     needs: check-container
     if: needs.check-container.outputs.exists == 'true'
     runs-on: ubuntu-latest
-    container: cometbft/cometbft-db-testing:v1.0.2
+    container: cometbft/cometbft-db-testing:v1.0.3
     steps:
       - uses: actions/checkout@v4
 
@@ -67,6 +67,7 @@ jobs:
           context: ./tools
           file: ./tools/Dockerfile
           tags: "cometbft/cometbft-db-testing:latest"
+          platforms: linux/amd64,linux/arm64
           load: true
 
       - name: test & coverage report creation
