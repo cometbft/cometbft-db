@@ -27,7 +27,8 @@ RUN \
   wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
-  && DEBUG_LEVEL=0 PORTABLE=1 make -j$(nproc) static_lib \
+  && DEBUG_LEVEL=0 make -j$(nproc) shared_lib \
   && make install \
+  && ldconfig \
   && cd .. \
   && rm -rf v${ROCKSDB}.tar.gz rocksdb-${ROCKSDB}
