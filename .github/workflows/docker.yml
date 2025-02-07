@@ -39,12 +39,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Publish to Docker Hub
+      - name: Publish to Docker Hub (amd64)
         uses: docker/build-push-action@v6
         with:
           context: ./tools
           file: ./tools/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          push: true
+          tags: |
+            cometbft/cometbft-db-testing:latest
+            cometbft/cometbft-db-testing:${{ github.event.inputs.refName }}
+
+      - name: Publish to Docker Hub (arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./tools
+          file: ./tools/Dockerfile.arm64
+          platforms: linux/arm64
           push: true
           tags: |
             cometbft/cometbft-db-testing:latest

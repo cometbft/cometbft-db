@@ -61,14 +61,11 @@ jobs:
         with:
           driver: docker
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Build Docker image (arm64) to ensure it works
         uses: docker/build-push-action@v6
         with:
           context: ./tools
-          file: ./tools/Dockerfile
+          file: ./tools/Dockerfile.arm64
           platforms: linux/arm64
 
       - name: Build Docker image (amd64) to be used in the next step
