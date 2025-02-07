@@ -20,7 +20,7 @@ jobs:
       - name: Check if Docker image exists
         id: check
         run: |
-          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.2 &>/dev/null; then
+          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.3 &>/dev/null; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -30,7 +30,7 @@ jobs:
     needs: check-container
     if: needs.check-container.outputs.exists == 'true'
     runs-on: ubuntu-latest
-    container: cometbft/cometbft-db-testing:v1.0.2
+    container: cometbft/cometbft-db-testing:v1.0.3
     steps:
       - uses: actions/checkout@v4
 
@@ -61,12 +61,23 @@ jobs:
         with:
           driver: docker
 
-      - name: Build Docker image
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build Docker image (arm64) to ensure it works
+        uses: docker/build-push-action@v6
+        with:
+          context: ./tools
+          file: ./tools/Dockerfile.arm64
+          platforms: linux/arm64
+
+      - name: Build Docker image (amd64) to be used in the next step
         uses: docker/build-push-action@v6
         with:
           context: ./tools
           file: ./tools/Dockerfile
           tags: "cometbft/cometbft-db-testing:latest"
+          platforms: linux/amd64
           load: true
 
       - name: test & coverage report creation
