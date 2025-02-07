@@ -16,7 +16,7 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN apt update \
     && apt install -y \
-       libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
+       libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
        make tar wget build-essential g++ cmake \
        libleveldb-dev libleveldb1d
 
