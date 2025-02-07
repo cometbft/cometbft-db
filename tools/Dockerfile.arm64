@@ -12,7 +12,4 @@
 
 FROM golang:1.23.5
 
-RUN apt update \
-    && apt install -y \
-       librocksdb-dev \
-       libleveldb-dev libleveldb1d
+RUN apt update && apt install -y libleveldb-dev libleveldb1d
