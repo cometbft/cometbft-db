@@ -17,18 +17,17 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 RUN apt update \
     && apt install -y \
        libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
-       make tar wget build-essential \
+       make tar wget build-essential g++ cmake \
        libleveldb-dev libleveldb1d
 
-FROM build AS install
 ARG ROCKSDB=9.8.4
 
-# Install Rocksdb
+# Install RocksDB
 RUN \
   wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
-  && DEBUG_LEVEL=0 make -j$(nproc) static_lib \
+  && DEBUG_LEVEL=0 PORTABLE=1 make -j$(nproc) static_lib \
   && make install \
   && cd .. \
   && rm -rf v${ROCKSDB}.tar.gz rocksdb-${ROCKSDB}
