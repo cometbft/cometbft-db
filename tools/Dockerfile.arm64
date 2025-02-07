@@ -10,6 +10,6 @@
 # PLEASE BUMP THE VERSION OF THE IMAGE IN `.github/workflows/ci.yml` WHEN YOU
 # MODIFY THIS FILE.
 
-FROM golang:1.23.5
+FROM golang:1.23.6
 
 RUN apt update && apt install -y libleveldb-dev libleveldb1d
