@@ -44,7 +44,7 @@ jobs:
         with:
           context: ./tools
           file: ./tools/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             cometbft/cometbft-db-testing:latest
