@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## v1.0.3
+
+*February 7, 2025*
+
+This release bumps the Go version to 1.23.6 and brings back arm64 Docker build
+(without rocksdb).
+
+### BUG FIXES
+
+- `[docker]` Bring back `arm64` build target
+  ([\#234](https://github.com/cometbft/cometbft-db/issues/234))
+
+### DEPENDENCIES
+
+- `[deps]` Bump Go version to 1.23.6
+  ([\#236](https://github.com/cometbft/cometbft-db/pull/236))
+
 ## v1.0.2
 
 *January 29, 2025*
