@@ -54,7 +54,7 @@ jobs:
   test:
     needs: check-tools
     if: needs.check-tools.outputs.tools_changed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
