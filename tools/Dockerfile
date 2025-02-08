@@ -7,9 +7,6 @@
 # updates here, merge the changes here first and let the image get updated (or
 # push a new version manually) before PRs that depend on them.
 
-# PLEASE BUMP THE VERSION OF THE IMAGE IN `.github/workflows/ci.yml` WHEN YOU
-# MODIFY THIS FILE.
-
 FROM golang:1.23.6
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
@@ -29,5 +26,6 @@ RUN \
   && cd rocksdb-${ROCKSDB} \
   && DEBUG_LEVEL=0 make -j4 shared_lib \
   && make install-shared \
+  && ldconfig \
   && cd .. \
   && rm -rf v${ROCKSDB}.tar.gz rocksdb-${ROCKSDB}

@@ -1,83 +1,41 @@
-name: Test fast (no changes to Dockerfile)
+name: Test
 
 on:
   pull_request:
+    paths:
+      - tools/Dockerfile
   merge_group:
   push:
     branches:
       - main
+    paths:
+      - tools/Dockerfile
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  check-container:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.check.outputs.exists }}
-    steps:
-      - name: Check if Docker image exists
-        id: check
-        run: |
-          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.3 &>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-  test-fast:
-    needs: check-container
-    if: needs.check-container.outputs.exists == 'true'
-    runs-on: ubuntu-latest
-    container: cometbft/cometbft-db-testing:v1.0.3
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure Git Safe Directory
-        run: git config --global --add safe.directory /__w/cometbft-db/cometbft-db
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: test & coverage report creation
-        run: |
-          NON_INTERACTIVE=1 make test-all-with-coverage
-
-      - uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.txt
-
-  test-slow:
-    needs: check-container
-    if: needs.check-container.outputs.exists == 'false'
+  Test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Build
         uses: docker/setup-buildx-action@v3.8.0
         with:
           driver: docker
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Build Docker image (arm64) to ensure it works
-        uses: docker/build-push-action@v6
-        with:
-          context: ./tools
-          file: ./tools/Dockerfile.arm64
-          platforms: linux/arm64
-
-      - name: Build Docker image (amd64) to be used in the next step
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./tools
           file: ./tools/Dockerfile
           tags: "cometbft/cometbft-db-testing:latest"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64 # build both images to ensure successful build
           load: true
 
       - name: test & coverage report creation
