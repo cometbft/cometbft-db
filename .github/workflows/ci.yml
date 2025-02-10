@@ -1,4 +1,3 @@
----
 name: Test fast (no changes to Dockerfile)
 on:
   pull_request:
