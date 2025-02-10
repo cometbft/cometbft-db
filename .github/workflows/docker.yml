@@ -49,7 +49,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
           file: ./tools/Dockerfile
-          outputs: type=image,"name=${{ env.ORG }}/${{ env.IMAGE_NAME }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=${{ env.ORG }}/${{ env.IMAGE_NAME }}",push=true
 
       - name: Export digest
         run: |
