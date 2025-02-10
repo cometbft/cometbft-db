@@ -1,6 +1,3 @@
-# PLEASE BUMP THE VERSION OF THE IMAGE IN `.github/workflows/ci.yml` WHEN YOU
-# MODIFY THIS FILE.
-
 FROM golang:1.23.6
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
