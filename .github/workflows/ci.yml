@@ -14,6 +14,7 @@ concurrency:
 env:
   ORG: cometbft
   IMAGE_NAME: cometbft-db-testing
+  IMAGE_TAG: v1.0.4
 
 jobs:
   check-container:
@@ -24,7 +25,7 @@ jobs:
       - name: Check if Docker image exists
         id: check
         run: |
-          if docker manifest inspect cometbft/cometbft-db-testing:v1.0.4 &>/dev/null; then
+          if docker manifest inspect ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} &>/dev/null; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -34,12 +35,12 @@ jobs:
     needs: check-container
     if: needs.check-container.outputs.exists == 'true'
     runs-on: ubuntu-latest
-    container: cometbft/cometbft-db-testing:v1.0.4
+    container: ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure Git Safe Directory
-        run: git config --global --add safe.directory /__w/cometbft-db/cometbft-db
+        run: git config --global --add safe.directory /__w/${{ env.IMAGE_NAME }}/${{ env.IMAGE_NAME }}
 
       - uses: actions/setup-go@v5
         with:
