@@ -1,5 +1,5 @@
+---
 name: Test fast (no changes to Dockerfile)
-
 on:
   pull_request:
   merge_group:
@@ -78,7 +78,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
           file: ./tools/Dockerfile
-          outputs: type=image,"name=${{ env.ORG }}/${{ env.IMAGE_NAME }}",name-canonical=true,load=true
+          outputs: type=image,"name=${{ env.ORG }}/${{ env.IMAGE_NAME }}",load-by-digest=true,name-canonical=true,load=true
 
       - name: test & coverage report creation
         run: |
