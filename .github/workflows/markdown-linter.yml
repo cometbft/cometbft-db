@@ -1,3 +1,4 @@
+---
 name: Markdown Linter
 on:
   push:

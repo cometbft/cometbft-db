@@ -14,7 +14,6 @@ concurrency:
 env:
   ORG: cometbft
   IMAGE_NAME: cometbft-db-testing
-  GIT_TAG: "${{ inputs.tag }}"
 
 jobs:
   check-container:
