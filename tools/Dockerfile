@@ -1,7 +1,5 @@
 FROM golang:1.23.6
 
-ENV LD_LIBRARY_PATH=/usr/local/lib
-
 RUN apt update \
     && apt install -y \
        libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev liblz4-dev \
