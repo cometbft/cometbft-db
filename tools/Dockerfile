@@ -1,4 +1,4 @@
-FROM golang:1.23.6
+FROM golang:1.22.11
 
 RUN apt update \
     && apt install -y \
