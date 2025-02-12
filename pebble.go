@@ -336,7 +336,7 @@ func newPebbleDBIterator(source *pebble.Iterator, start, end []byte, isReverse b
 }
 
 // Domain implements Iterator.
-func (itr *pebbleDBIterator) Domain() ([]byte, []byte) {
+func (itr *pebbleDBIterator) Domain() (start []byte, end []byte) {
 	return itr.start, itr.end
 }
 

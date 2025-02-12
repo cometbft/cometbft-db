@@ -48,7 +48,7 @@ func newGoLevelDBIterator(source iterator.Iterator, start, end []byte, isReverse
 }
 
 // Domain implements Iterator.
-func (itr *goLevelDBIterator) Domain() ([]byte, []byte) {
+func (itr *goLevelDBIterator) Domain() (start []byte, end []byte) {
 	return itr.start, itr.end
 }
 
