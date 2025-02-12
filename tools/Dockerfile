@@ -1,15 +1,4 @@
-# This file defines the container image used to build and test tm-db in CI.
-# The CI workflows use the latest tag of cometbft/cometbft-db-testing built
-# from these settings.
-#
-# The jobs defined in the Build & Push workflow will build and update the image
-# when changes to this file are merged.  If you have other changes that require
-# updates here, merge the changes here first and let the image get updated (or
-# push a new version manually) before PRs that depend on them.
-
-FROM golang:1.22.11 AS build
-
-ENV LD_LIBRARY_PATH=/usr/local/lib
+FROM golang:1.23.6
 
 RUN apt update \
     && apt install -y \
@@ -17,7 +6,6 @@ RUN apt update \
        make tar wget build-essential \
        libleveldb-dev libleveldb1d
 
-FROM build AS install
 ARG ROCKSDB=8.11.3
 
 # Install Rocksdb

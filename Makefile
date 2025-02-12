@@ -88,6 +88,16 @@ docker-test:
 		make test-all-with-coverage
 .PHONY: docker-test
 
+docker-lint:
+	@docker run $(DOCKER_TEST_INTERACTIVE_FLAGS) --rm --name cometbft-db-test \
+		-v `pwd`:/cometbft \
+		-w /cometbft \
+		--entrypoint "" \
+		$(DOCKER_TEST_IMAGE):$(DOCKER_TEST_IMAGE_VERSION) \
+		make lint
+.PHONY: docker-lint
+
+#? tools: Install tools
 tools:
 	go get -v $(GOTOOLS)
 .PHONY: tools
