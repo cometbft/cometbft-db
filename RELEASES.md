@@ -11,5 +11,7 @@ DB.
    branch.
 5. Create a [GitHub release] from the new tag, and include a link from the
    description to the heading associated with the new version in the changelog.
+6. Build and push the Docker image associated with the new release by running
+   `Build Docker Image` GH action with the newly created tag `vX.X.X`.
 
 [GitHub release]: https://docs.github.com/en/github/administering-a-repository/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release
