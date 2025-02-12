@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: cometbft-db-testing
 
 jobs:
-  test-fast:
+  test:
     strategy:
       fail-fast: true
       matrix:
