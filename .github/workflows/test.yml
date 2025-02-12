@@ -1,4 +1,4 @@
-name: Lint
+name: Test
 on:
   pull_request:
   merge_group:
@@ -15,8 +15,16 @@ env:
   IMAGE_NAME: cometbft-db-testing
 
 jobs:
-  golangci:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux/amd64
+          - os: ubuntu-24.04-arm
+            platform: linux/arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,11 +34,15 @@ jobs:
       - name: Build and load
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           file: ./tools/Dockerfile
           tags: "${{ env.ORG }}/${{ env.IMAGE_NAME }}:latest"
           load: true
 
-      - name: lint
+      - name: test & coverage report creation
         run: |
-          NON_INTERACTIVE=1 make docker-lint
+          NON_INTERACTIVE=1 make docker-test
+
+      - uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.txt

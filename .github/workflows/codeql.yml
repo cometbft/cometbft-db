@@ -10,7 +10,6 @@
 # supported CodeQL languages.
 #
 name: "CodeQL"
-
 on:
   workflow_dispatch:  # allow running workflow manually
   push:
