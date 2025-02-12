@@ -31,11 +31,6 @@ jobs:
           tags: "${{ env.ORG }}/${{ env.IMAGE_NAME }}:latest"
           load: true
 
-      - uses: golangci/golangci-lint-action@v6.1.0
-        with:
-          args: --timeout 10m
-          version: latest
-          github-token: ${{ secrets.github_token }}
       - name: lint
         run: |
           NON_INTERACTIVE=1 make docker-lint
