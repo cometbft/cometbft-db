@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.0.4
+
+*February 28, 2025*
+
+This release relaxes Go version constraints and fixes Docker builds.
+
 ## v1.0.3
 
 *February 7, 2025*
