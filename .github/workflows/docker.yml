@@ -33,7 +33,7 @@ jobs:
             platform: linux/arm64
     runs-on: ${{ matrix.os }}
     outputs:
-      digest-${{ matrix.platform }}: ${{ steps.build.outputs.digest }}
+      digest_${{ matrix.platform }}: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,13 +78,13 @@ jobs:
         run: |
           docker buildx imagetools create \
             --tag ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.DOCKER_TAG }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/amd64 }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/arm64 }}
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_linux_amd64 }} \
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_linux_arm64 }}
 
       - name: Tag and Push Latest (if applicable)
         if: ${{ inputs.is_latest == true }}
         run: |
           docker buildx imagetools create \
             --tag ${{ env.ORG }}/${{ env.IMAGE_NAME }}:latest \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/amd64 }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/arm64 }}
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_linux_amd64 }} \
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_linux_arm64 }}
