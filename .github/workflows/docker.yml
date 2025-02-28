@@ -29,12 +29,14 @@ jobs:
         include:
           - os: ubuntu-24.04
             platform: linux/amd64
+            platform_short: amd64
           - os: ubuntu-24.04-arm
             platform: linux/arm64
+            platform_short: arm64
     runs-on: ${{ matrix.os }}
     outputs:
-      digest_amd64: ${{ steps.build.outputs.digest }}
-      digest_arm64: ${{ steps.build.outputs.digest }}
+      digest_amd64: ${{ steps.build-amd64.outputs.digest }}
+      digest_arm64: ${{ steps.build-arm64.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,7 +54,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
-        id: build
+        id: build-${{ matrix.platform_short }}
         uses: docker/build-push-action@v6
         with:
           platforms: ${{ matrix.platform }}
