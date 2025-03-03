@@ -14,7 +14,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: true
 
 env:
   ORG: cometbft
@@ -29,11 +29,14 @@ jobs:
         include:
           - os: ubuntu-24.04
             platform: linux/amd64
+            arch: amd64
           - os: ubuntu-24.04-arm
             platform: linux/arm64
+            arch: arm64
     runs-on: ${{ matrix.os }}
     outputs:
-      digest-${{ matrix.platform }}: ${{ steps.build.outputs.digest }}
+      digest_amd64: ${{ steps.capture-digest.outputs.digest_amd64 }}
+      digest_arm64: ${{ steps.capture-digest.outputs.digest_arm64 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,6 +62,13 @@ jobs:
           tags: |
             ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.GIT_TAG }}
           push: true
+          outputs: type=image,name=${{ env.ORG }}/${{ env.IMAGE_NAME }},digest=true
+
+      - name: Capture Image Digest
+        id: capture-digest
+        run: |
+          echo "digest_${{ matrix.arch }}=${{ steps.build.outputs.digest }}" >> $GITHUB_ENV
+          echo "::set-output name=digest_${{ matrix.arch }}::${{ steps.build.outputs.digest }}"
 
   merge:
     runs-on: ubuntu-latest
@@ -66,6 +76,11 @@ jobs:
     steps:
       - name: Get sanitized Docker tag
         run: echo "DOCKER_TAG=$(echo $GIT_TAG | sed 's/[^a-zA-Z0-9\.]/-/g')" >> $GITHUB_ENV
+
+      - name: Debug Output Digests
+        run: |
+          echo "AMD64 Digest: ${{ needs.build-image-at-tag.outputs.digest_amd64 }}"
+          echo "ARM64 Digest: ${{ needs.build-image-at-tag.outputs.digest_arm64 }}"
 
       - name: Login to DockerHub
         if: ${{ github.event_name != 'pull_request' }}
@@ -78,13 +93,13 @@ jobs:
         run: |
           docker buildx imagetools create \
             --tag ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.DOCKER_TAG }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/amd64 }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/arm64 }}
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_amd64 }} \
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_arm64 }}
 
       - name: Tag and Push Latest (if applicable)
         if: ${{ inputs.is_latest == true }}
         run: |
           docker buildx imagetools create \
             --tag ${{ env.ORG }}/${{ env.IMAGE_NAME }}:latest \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/amd64 }} \
-            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest-linux/arm64 }}
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_amd64 }} \
+            ${{ env.ORG }}/${{ env.IMAGE_NAME }}@${{ needs.build-image-at-tag.outputs.digest_arm64 }}
