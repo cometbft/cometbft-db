@@ -14,7 +14,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: true
 
 env:
   ORG: cometbft
@@ -29,14 +29,14 @@ jobs:
         include:
           - os: ubuntu-24.04
             platform: linux/amd64
-            platform_short: amd64
+            arch: amd64
           - os: ubuntu-24.04-arm
             platform: linux/arm64
-            platform_short: arm64
+            arch: arm64
     runs-on: ${{ matrix.os }}
     outputs:
-      digest_amd64: ${{ steps.build-amd64.outputs.digest }}
-      digest_arm64: ${{ steps.build-arm64.outputs.digest }}
+      digest_amd64: ${{ steps.capture-digest.outputs.digest_amd64 }}
+      digest_arm64: ${{ steps.capture-digest.outputs.digest_arm64 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,7 +54,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
-        id: build-${{ matrix.platform_short }}
+        id: build
         uses: docker/build-push-action@v6
         with:
           platforms: ${{ matrix.platform }}
@@ -62,6 +62,11 @@ jobs:
           tags: |
             ${{ env.ORG }}/${{ env.IMAGE_NAME }}:${{ env.GIT_TAG }}
           push: true
+          outputs: type=image,name=${{ env.ORG }}/${{ env.IMAGE_NAME }},digest=true
+
+      - name: Capture Image Digest
+        id: capture-digest
+        run: echo "digest_${{ matrix.arch }}=${{ steps.build.outputs.digest }}" >> $GITHUB_ENV
 
   merge:
     runs-on: ubuntu-latest
