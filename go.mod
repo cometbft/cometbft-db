@@ -50,5 +50,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// Breaking changes were released with the wrong tag (use v0.6.6 or later).
-retract v0.6.5
+
+retract (
+		v0.6.5 // Breaking changes were released with the wrong tag (use v0.6.6 or later).
+		[v1.0.2, v1.0.3] // These do not have Docker images due to the broken pipeline.
+)
