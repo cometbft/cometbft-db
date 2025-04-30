@@ -1,6 +1,6 @@
 module github.com/cometbft/cometbft-db
 
-go 1.22.11
+go 1.22.12
 
 require (
 	github.com/cockroachdb/pebble v1.1.1
