@@ -105,11 +105,6 @@ func (db *MemDB) Set(key []byte, value []byte) error {
 	return nil
 }
 
-// set sets a value without locking the mutex.
-func (db *MemDB) set(key []byte, value []byte) {
-	db.btree.ReplaceOrInsert(newPair(key, value))
-}
-
 // SetSync implements DB.
 func (db *MemDB) SetSync(key []byte, value []byte) error {
 	return db.Set(key, value)
@@ -125,11 +120,6 @@ func (db *MemDB) Delete(key []byte) error {
 
 	db.delete(key)
 	return nil
-}
-
-// delete deletes a key without locking the mutex.
-func (db *MemDB) delete(key []byte) {
-	db.btree.Delete(newKey(key))
 }
 
 // DeleteSync implements DB.
@@ -213,4 +203,14 @@ func (db *MemDB) ReverseIteratorNoMtx(start, end []byte) (Iterator, error) {
 func (*MemDB) Compact(_, _ []byte) error {
 	// No Compaction is supported for memDB and there is no point in supporting compaction for a memory DB
 	return nil
+}
+
+// set sets a value without locking the mutex.
+func (db *MemDB) set(key []byte, value []byte) {
+	db.btree.ReplaceOrInsert(newPair(key, value))
+}
+
+// delete deletes a key without locking the mutex.
+func (db *MemDB) delete(key []byte) {
+	db.btree.Delete(newKey(key))
 }

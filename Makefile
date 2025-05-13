@@ -63,7 +63,7 @@ test-all-with-coverage:
 #? lint: Run linter
 lint:
 	@echo "--> Running linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+	@go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.0 run
 	@go mod verify
 .PHONY: lint
 

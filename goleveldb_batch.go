@@ -56,6 +56,15 @@ func (b *goLevelDBBatch) WriteSync() error {
 	return b.write(true)
 }
 
+// Close implements Batch.
+func (b *goLevelDBBatch) Close() error {
+	if b.batch != nil {
+		b.batch.Reset()
+		b.batch = nil
+	}
+	return nil
+}
+
 func (b *goLevelDBBatch) write(sync bool) error {
 	if b.batch == nil {
 		return errBatchClosed
@@ -67,13 +76,4 @@ func (b *goLevelDBBatch) write(sync bool) error {
 	}
 	// Make sure batch cannot be used afterwards. Callers should still call Close(), for errors.
 	return b.Close()
-}
-
-// Close implements Batch.
-func (b *goLevelDBBatch) Close() error {
-	if b.batch != nil {
-		b.batch.Reset()
-		b.batch = nil
-	}
-	return nil
 }
