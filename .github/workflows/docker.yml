@@ -38,7 +38,7 @@ jobs:
       digest_amd64: ${{ steps.capture-digest.outputs.digest_amd64 }}
       digest_arm64: ${{ steps.capture-digest.outputs.digest_arm64 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: "${{ env.GIT_TAG }}"
           fetch-depth: 0
