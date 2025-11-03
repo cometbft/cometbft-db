@@ -41,6 +41,9 @@ const (
 	// PebbleDBDBBackend represents pebble (uses github.com/cockroachdb/pebble)
 	//   - pure go
 	PebbleDBBackend BackendType = "pebbledb"
+	// Pebble2DBDBBackend represents pebble (uses github.com/cockroachdb/pebble/v2)
+	//   - pure go
+	Pebble2DBBackend BackendType = "pebbledb2"
 )
 
 type dbCreator func(name string, dir string) (DB, error)
