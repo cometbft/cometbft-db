@@ -2,10 +2,13 @@ package db
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"path/filepath"
 
 	"github.com/cockroachdb/pebble"
+	pebble2 "github.com/cockroachdb/pebble/v2"
 )
 
 func init() {
@@ -13,11 +16,16 @@ func init() {
 		return NewPebbleDB(name, dir)
 	}
 	registerDBCreator(PebbleDBBackend, dbCreator)
+
+	dbCreator2 := func(name string, dir string) (DB, error) {
+		return NewPebble2DB(name, dir)
+	}
+	registerDBCreator(Pebble2DBBackend, dbCreator2)
 }
 
 // PebbleDB is a PebbleDB backend.
 type PebbleDB struct {
-	db *pebble.DB
+	db pebbleDB
 }
 
 var _ DB = (*PebbleDB)(nil)
@@ -36,7 +44,7 @@ func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*Pebble
 		return nil, err
 	}
 	return &PebbleDB{
-		db: p,
+		db: &pebbleV1Adapter{p},
 	}, err
 }
 
@@ -48,10 +56,11 @@ func (db *PebbleDB) Get(key []byte) ([]byte, error) {
 
 	res, closer, err := db.db.Get(key)
 	if err != nil {
-		if err == pebble.ErrNotFound {
-			return nil, nil
-		}
 		return nil, err
+	}
+	if closer == nil {
+		// Key not found
+		return nil, nil
 	}
 	defer closer.Close()
 
@@ -80,8 +89,7 @@ func (db *PebbleDB) Set(key []byte, value []byte) error {
 		return errValueNil
 	}
 
-	wopts := pebble.NoSync
-	err := db.db.Set(key, value, wopts)
+	err := db.db.Set(key, value, db.db.noSyncOpts())
 	if err != nil {
 		return err
 	}
@@ -96,7 +104,7 @@ func (db *PebbleDB) SetSync(key []byte, value []byte) error {
 	if value == nil {
 		return errValueNil
 	}
-	err := db.db.Set(key, value, pebble.Sync)
+	err := db.db.Set(key, value, db.db.syncOpts())
 	if err != nil {
 		return err
 	}
@@ -109,8 +117,7 @@ func (db *PebbleDB) Delete(key []byte) error {
 		return errKeyEmpty
 	}
 
-	wopts := pebble.NoSync
-	return db.db.Delete(key, wopts)
+	return db.db.Delete(key, db.db.noSyncOpts())
 }
 
 // DeleteSync implements DB.
@@ -118,11 +125,11 @@ func (db PebbleDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
-	return db.db.Delete(key, pebble.Sync)
+	return db.db.Delete(key, db.db.syncOpts())
 }
 
-func (db *PebbleDB) DB() *pebble.DB {
-	return db.db
+func (db *PebbleDB) DB() interface{} {
+	return db.db.DB()
 }
 
 func (db *PebbleDB) Compact(start, end []byte) (err error) {
@@ -188,7 +195,7 @@ func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
 		return nil, errKeyEmpty
 	}
-	o := pebble.IterOptions{
+	o := pebbleIterOptions{
 		LowerBound: start,
 		UpperBound: end,
 	}
@@ -206,7 +213,7 @@ func (db *PebbleDB) ReverseIterator(start, end []byte) (Iterator, error) {
 	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
 		return nil, errKeyEmpty
 	}
-	o := pebble.IterOptions{
+	o := pebbleIterOptions{
 		LowerBound: start,
 		UpperBound: end,
 	}
@@ -222,7 +229,7 @@ var _ Batch = (*pebbleDBBatch)(nil)
 
 type pebbleDBBatch struct {
 	db    *PebbleDB
-	batch *pebble.Batch
+	batch pebbleBatch
 }
 
 var _ Batch = (*pebbleDBBatch)(nil)
@@ -271,8 +278,7 @@ func (b *pebbleDBBatch) Write() error {
 		return errBatchClosed
 	}
 
-	wopts := pebble.NoSync
-	err := b.batch.Commit(wopts)
+	err := b.batch.Commit(b.db.db.noSyncOpts())
 	if err != nil {
 		return err
 	}
@@ -286,7 +292,7 @@ func (b *pebbleDBBatch) WriteSync() error {
 	if b.batch == nil {
 		return errBatchClosed
 	}
-	err := b.batch.Commit(pebble.Sync)
+	err := b.batch.Commit(b.db.db.syncOpts())
 	if err != nil {
 		return err
 	}
@@ -308,7 +314,7 @@ func (b *pebbleDBBatch) Close() error {
 }
 
 type pebbleDBIterator struct {
-	source     *pebble.Iterator
+	source     pebbleIter
 	start, end []byte
 	isReverse  bool
 	isInvalid  bool
@@ -316,7 +322,7 @@ type pebbleDBIterator struct {
 
 var _ Iterator = (*pebbleDBIterator)(nil)
 
-func newPebbleDBIterator(source *pebble.Iterator, start, end []byte, isReverse bool) *pebbleDBIterator {
+func newPebbleDBIterator(source pebbleIter, start, end []byte, isReverse bool) *pebbleDBIterator {
 	if isReverse {
 		if end == nil {
 			source.Last()
@@ -427,4 +433,255 @@ func (itr *pebbleDBIterator) assertIsValid() {
 	if !itr.Valid() {
 		panic("iterator is invalid")
 	}
+}
+
+// pebbleDB is an interface unifying pebble db v1 and v2 implementations.
+type pebbleDB interface {
+	Get(key []byte) (value []byte, closer io.Closer, err error)
+	Set(key, value []byte, opts pebbleWriteOptions) error
+	Delete(key []byte, opts pebbleWriteOptions) error
+	NewBatch() pebbleBatch
+	NewIter(opts *pebbleIterOptions) (pebbleIter, error)
+	Compact(start, end []byte, parallelize bool) error
+	Close() error
+
+	DB() interface{}
+
+	// syncOpts returns the appropriate sync/nosync options for this adapter
+	syncOpts() pebbleWriteOptions
+	noSyncOpts() pebbleWriteOptions
+}
+
+type pebbleBatch interface {
+	Set(key, value []byte, opts pebbleWriteOptions) error
+	Delete(key []byte, opts pebbleWriteOptions) error
+	Commit(opts pebbleWriteOptions) error
+	Close() error
+}
+
+type pebbleIter interface {
+	First() bool
+	Last() bool
+	Next() bool
+	Prev() bool
+	Valid() bool
+	Key() []byte
+	Value() []byte
+	Error() error
+	Close() error
+}
+
+type pebbleWriteOptions interface{}
+
+type pebbleIterOptions struct {
+	LowerBound []byte
+	UpperBound []byte
+}
+
+type pebbleV1Adapter struct {
+	db *pebble.DB
+}
+
+func (p *pebbleV1Adapter) Get(key []byte) (value []byte, closer io.Closer, err error) {
+	value, closer, err = p.db.Get(key)
+	if err == pebble.ErrNotFound {
+		return nil, nil, nil
+	}
+	return value, closer, err
+}
+
+func (p *pebbleV1Adapter) Set(key []byte, value []byte, opts pebbleWriteOptions) error {
+	return p.db.Set(key, value, opts.(*pebble.WriteOptions))
+}
+
+func (p *pebbleV1Adapter) Delete(key []byte, opts pebbleWriteOptions) error {
+	return p.db.Delete(key, opts.(*pebble.WriteOptions))
+}
+
+func (p *pebbleV1Adapter) NewBatch() pebbleBatch {
+	return &pebbleV1BatchAdapter{batch: p.db.NewBatch()}
+}
+
+func (p *pebbleV1Adapter) NewIter(opts *pebbleIterOptions) (pebbleIter, error) {
+	var iterOpts *pebble.IterOptions
+	if opts != nil {
+		iterOpts = &pebble.IterOptions{
+			LowerBound: opts.LowerBound,
+			UpperBound: opts.UpperBound,
+		}
+	}
+	return p.db.NewIter(iterOpts)
+}
+
+func (p *pebbleV1Adapter) Compact(start []byte, end []byte, parallelize bool) error {
+	return p.db.Compact(start, end, parallelize)
+}
+
+func (p *pebbleV1Adapter) Close() error {
+	return p.db.Close()
+}
+
+func (p *pebbleV1Adapter) DB() interface{} {
+	return p.db
+}
+
+func (*pebbleV1Adapter) syncOpts() pebbleWriteOptions {
+	return pebble.Sync
+}
+
+func (*pebbleV1Adapter) noSyncOpts() pebbleWriteOptions {
+	return pebble.NoSync
+}
+
+type pebbleV1BatchAdapter struct {
+	batch *pebble.Batch
+}
+
+func (b *pebbleV1BatchAdapter) Set(key, value []byte, opts pebbleWriteOptions) error {
+	var writeOpts *pebble.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble.WriteOptions)
+	}
+	return b.batch.Set(key, value, writeOpts)
+}
+
+func (b *pebbleV1BatchAdapter) Delete(key []byte, opts pebbleWriteOptions) error {
+	var writeOpts *pebble.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble.WriteOptions)
+	}
+	return b.batch.Delete(key, writeOpts)
+}
+
+func (b *pebbleV1BatchAdapter) Commit(opts pebbleWriteOptions) error {
+	var writeOpts *pebble.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble.WriteOptions)
+	}
+	return b.batch.Commit(writeOpts)
+}
+
+func (b *pebbleV1BatchAdapter) Close() error {
+	return b.batch.Close()
+}
+
+type pebbleV2Adapter struct {
+	db *pebble2.DB
+}
+
+func (p *pebbleV2Adapter) Get(key []byte) (value []byte, closer io.Closer, err error) {
+	value, closer, err = p.db.Get(key)
+	if err == pebble2.ErrNotFound {
+		return nil, nil, nil
+	}
+	return value, closer, err
+}
+
+func (p *pebbleV2Adapter) Set(key []byte, value []byte, opts pebbleWriteOptions) error {
+	return p.db.Set(key, value, opts.(*pebble2.WriteOptions))
+}
+
+func (p *pebbleV2Adapter) Delete(key []byte, opts pebbleWriteOptions) error {
+	return p.db.Delete(key, opts.(*pebble2.WriteOptions))
+}
+
+func (p *pebbleV2Adapter) NewBatch() pebbleBatch {
+	return &pebbleV2BatchAdapter{batch: p.db.NewBatch()}
+}
+
+func (p *pebbleV2Adapter) NewIter(opts *pebbleIterOptions) (pebbleIter, error) {
+	var iterOpts *pebble2.IterOptions
+	if opts != nil {
+		iterOpts = &pebble2.IterOptions{
+			LowerBound: opts.LowerBound,
+			UpperBound: opts.UpperBound,
+		}
+	}
+	return p.db.NewIter(iterOpts)
+}
+
+func (p *pebbleV2Adapter) Compact(start []byte, end []byte, parallelize bool) error {
+	return p.db.Compact(context.TODO(), start, end, parallelize)
+}
+
+func (p *pebbleV2Adapter) Close() error {
+	return p.db.Close()
+}
+
+func (p *pebbleV2Adapter) DB() interface{} {
+	return p.db
+}
+
+func (*pebbleV2Adapter) syncOpts() pebbleWriteOptions {
+	return pebble2.Sync
+}
+
+func (*pebbleV2Adapter) noSyncOpts() pebbleWriteOptions {
+	return pebble2.NoSync
+}
+
+type pebbleV2BatchAdapter struct {
+	batch *pebble2.Batch
+}
+
+func (b *pebbleV2BatchAdapter) Set(key, value []byte, opts pebbleWriteOptions) error {
+	var writeOpts *pebble2.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble2.WriteOptions)
+	}
+	return b.batch.Set(key, value, writeOpts)
+}
+
+func (b *pebbleV2BatchAdapter) Delete(key []byte, opts pebbleWriteOptions) error {
+	var writeOpts *pebble2.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble2.WriteOptions)
+	}
+	return b.batch.Delete(key, writeOpts)
+}
+
+func (b *pebbleV2BatchAdapter) Commit(opts pebbleWriteOptions) error {
+	var writeOpts *pebble2.WriteOptions
+	if opts != nil {
+		writeOpts = opts.(*pebble2.WriteOptions)
+	}
+	return b.batch.Commit(writeOpts)
+}
+
+func (b *pebbleV2BatchAdapter) Close() error {
+	return b.batch.Close()
+}
+
+// Pebble2DB is a PebbleDB v2 backend.
+type Pebble2DB struct {
+	*PebbleDB
+}
+
+var _ DB = (*Pebble2DB)(nil)
+
+func NewPebble2DB(name string, dir string) (*Pebble2DB, error) {
+	opts := &pebble2.Options{}
+	opts.EnsureDefaults()
+	return NewPebble2DBWithOpts(name, dir, opts)
+}
+
+func NewPebble2DBWithOpts(name string, dir string, opts *pebble2.Options) (*Pebble2DB, error) {
+	dbPath := filepath.Join(dir, name+".db")
+	opts.EnsureDefaults()
+	p, err := pebble2.Open(dbPath, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// Use the pebbleV2Adapter
+	pdb := &PebbleDB{
+		db: &pebbleV2Adapter{db: p},
+	}
+
+	return &Pebble2DB{PebbleDB: pdb}, nil
+}
+
+// DB returns the underlying pebble v2 DB.
+func (db *Pebble2DB) DB() *pebble2.DB {
+	return db.PebbleDB.db.DB().(*pebble2.DB)
 }
