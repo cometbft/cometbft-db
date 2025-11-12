@@ -44,7 +44,7 @@ func TestPebble2DBBackend(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanupDBDir(dir, name)
 
-	_, ok := db.(*Pebble2DB)
+	_, ok := db.(*PebbleDB)
 	assert.True(t, ok)
 }
 

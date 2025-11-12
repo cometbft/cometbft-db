@@ -36,6 +36,12 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 	return NewPebbleDBWithOpts(name, dir, opts)
 }
 
+func NewPebble2DB(name string, dir string) (*PebbleDB, error) {
+	opts := &pebble2.Options{}
+	opts.EnsureDefaults()
+	return NewPebble2DBWithOpts(name, dir, opts)
+}
+
 func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
 	opts.EnsureDefaults()
@@ -45,7 +51,21 @@ func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*Pebble
 	}
 	return &PebbleDB{
 		db: &pebbleV1Adapter{p},
-	}, err
+	}, nil
+}
+
+func NewPebble2DBWithOpts(name string, dir string, opts *pebble2.Options) (*PebbleDB, error) {
+	dbPath := filepath.Join(dir, name+".db")
+	opts.EnsureDefaults()
+	p, err := pebble2.Open(dbPath, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// Use the pebbleV2Adapter
+	return &PebbleDB{
+		db: &pebbleV2Adapter{db: p},
+	}, nil
 }
 
 // Get implements DB.
@@ -128,7 +148,7 @@ func (db PebbleDB) DeleteSync(key []byte) error {
 	return db.db.Delete(key, db.db.syncOpts())
 }
 
-func (db *PebbleDB) DB() interface{} {
+func (db *PebbleDB) DB() any {
 	return db.db.DB()
 }
 
@@ -445,7 +465,7 @@ type pebbleDB interface {
 	Compact(start, end []byte, parallelize bool) error
 	Close() error
 
-	DB() interface{}
+	DB() any
 
 	// syncOpts returns the appropriate sync/nosync options for this adapter
 	syncOpts() pebbleWriteOptions
@@ -471,7 +491,7 @@ type pebbleIter interface {
 	Close() error
 }
 
-type pebbleWriteOptions interface{}
+type pebbleWriteOptions any
 
 type pebbleIterOptions struct {
 	LowerBound []byte
@@ -521,7 +541,7 @@ func (p *pebbleV1Adapter) Close() error {
 	return p.db.Close()
 }
 
-func (p *pebbleV1Adapter) DB() interface{} {
+func (p *pebbleV1Adapter) DB() any {
 	return p.db
 }
 
@@ -601,14 +621,14 @@ func (p *pebbleV2Adapter) NewIter(opts *pebbleIterOptions) (pebbleIter, error) {
 }
 
 func (p *pebbleV2Adapter) Compact(start []byte, end []byte, parallelize bool) error {
-	return p.db.Compact(context.TODO(), start, end, parallelize)
+	return p.db.Compact(context.Background(), start, end, parallelize)
 }
 
 func (p *pebbleV2Adapter) Close() error {
 	return p.db.Close()
 }
 
-func (p *pebbleV2Adapter) DB() interface{} {
+func (p *pebbleV2Adapter) DB() any {
 	return p.db
 }
 
@@ -650,38 +670,4 @@ func (b *pebbleV2BatchAdapter) Commit(opts pebbleWriteOptions) error {
 
 func (b *pebbleV2BatchAdapter) Close() error {
 	return b.batch.Close()
-}
-
-// Pebble2DB is a PebbleDB v2 backend.
-type Pebble2DB struct {
-	*PebbleDB
-}
-
-var _ DB = (*Pebble2DB)(nil)
-
-func NewPebble2DB(name string, dir string) (*Pebble2DB, error) {
-	opts := &pebble2.Options{}
-	opts.EnsureDefaults()
-	return NewPebble2DBWithOpts(name, dir, opts)
-}
-
-func NewPebble2DBWithOpts(name string, dir string, opts *pebble2.Options) (*Pebble2DB, error) {
-	dbPath := filepath.Join(dir, name+".db")
-	opts.EnsureDefaults()
-	p, err := pebble2.Open(dbPath, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	// Use the pebbleV2Adapter
-	pdb := &PebbleDB{
-		db: &pebbleV2Adapter{db: p},
-	}
-
-	return &Pebble2DB{PebbleDB: pdb}, nil
-}
-
-// DB returns the underlying pebble v2 DB.
-func (db *Pebble2DB) DB() *pebble2.DB {
-	return db.PebbleDB.db.DB().(*pebble2.DB)
 }
