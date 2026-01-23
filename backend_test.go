@@ -150,6 +150,19 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	err = db.Compact(nil, nil)
 	require.NoError(t, err)
 
+	// Compaction over a specific range should succeed and keep data accessible.
+	err = db.Set([]byte("cmp/a"), []byte{0x0a})
+	require.NoError(t, err)
+	err = db.Set([]byte("cmp/c"), []byte{0x0c})
+	require.NoError(t, err)
+
+	err = db.Compact([]byte("cmp/a"), []byte("cmp/d"))
+	require.NoError(t, err)
+
+	value, err = db.Get([]byte("cmp/a"))
+	require.NoError(t, err)
+	require.Equal(t, []byte{0x0a}, value)
+
 	if strings.Contains(string(backend), "pebbledb") {
 		// When running the test the folder can't be cleaned up and there
 		// is a panic on removing the tmp testing directories.

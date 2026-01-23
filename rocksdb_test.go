@@ -47,34 +47,6 @@ func TestRocksDBNewRocksDB(t *testing.T) {
 	require.Error(t, err, "should not be able to open db twice")
 }
 
-func TestRocksDBCompact(t *testing.T) {
-	name := fmt.Sprintf("test_%x", randStr(12))
-	dir := os.TempDir()
-	db, err := NewDB(name, RocksDBBackend, dir)
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, db.Close())
-		cleanupDBDir(dir, name)
-	}()
-
-	for i := 0; i < 100; i++ {
-		key := []byte(fmt.Sprintf("key%03d", i))
-		value := []byte(fmt.Sprintf("value%03d", i))
-		err = db.Set(key, value)
-		require.NoError(t, err)
-	}
-
-	err = db.Compact(nil, nil)
-	require.NoError(t, err)
-
-	err = db.Compact([]byte("key000"), []byte("key050"))
-	require.NoError(t, err)
-
-	value, err := db.Get([]byte("key025"))
-	require.NoError(t, err)
-	assert.Equal(t, []byte("value025"), value)
-}
-
 func BenchmarkRocksDBRandomReadsWrites(b *testing.B) {
 	name := fmt.Sprintf("test_%x", randStr(12))
 	db, err := NewRocksDB(name, "")
