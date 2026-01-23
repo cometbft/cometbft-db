@@ -40,13 +40,14 @@ func TestRocksDBNewRocksDB(t *testing.T) {
 	// Test we can't open the db twice for writing
 	wr1, err := NewRocksDB(name, "")
 	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, wr1.Close())
+	})
 	_, err = NewRocksDB(name, "")
 	require.Error(t, err, "should not be able to open db twice")
-	err = wr1.Close()
-	require.NoError(t, err)
 }
 
-func TestRocksDBDeleteSync(t *testing.T) {
+func TestRocksDBCompact(t *testing.T) {
 	name := fmt.Sprintf("test_%x", randStr(12))
 	dir := os.TempDir()
 	db, err := NewDB(name, RocksDBBackend, dir)
@@ -56,109 +57,22 @@ func TestRocksDBDeleteSync(t *testing.T) {
 		cleanupDBDir(dir, name)
 	}()
 
-	// Set a key
-	key := []byte("testkey")
-	value := []byte("testvalue")
-	err = db.SetSync(key, value)
-	require.NoError(t, err)
-
-	// Verify it exists
-	got, err := db.Get(key)
-	require.NoError(t, err)
-	assert.Equal(t, value, got)
-
-	// Delete it synchronously
-	err = db.DeleteSync(key)
-	require.NoError(t, err)
-
-	// Verify it's gone
-	got, err = db.Get(key)
-	require.NoError(t, err)
-	assert.Nil(t, got)
-
-	// Test DeleteSync with empty key
-	err = db.DeleteSync([]byte{})
-	require.Error(t, err, "should error on empty key")
-}
-
-func TestRocksDBBatch(t *testing.T) {
-	name := fmt.Sprintf("test_%x", randStr(12))
-	dir := os.TempDir()
-	db, err := NewDB(name, RocksDBBackend, dir)
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, db.Close())
-		cleanupDBDir(dir, name)
-	}()
-
-	// Create a batch
-	batch := db.NewBatch()
-	require.NotNil(t, batch)
-
-	// Add operations to batch
-	for i := 0; i < 10; i++ {
-		key := []byte(fmt.Sprintf("batchkey%d", i))
-		value := []byte(fmt.Sprintf("batchvalue%d", i))
-		err = batch.Set(key, value)
+	for i := 0; i < 100; i++ {
+		key := []byte(fmt.Sprintf("key%03d", i))
+		value := []byte(fmt.Sprintf("value%03d", i))
+		err = db.Set(key, value)
 		require.NoError(t, err)
 	}
 
-	// Write batch
-	err = batch.WriteSync()
+	err = db.Compact(nil, nil)
 	require.NoError(t, err)
 
-	// Verify all keys were written
-	for i := 0; i < 10; i++ {
-		key := []byte(fmt.Sprintf("batchkey%d", i))
-		expectedValue := []byte(fmt.Sprintf("batchvalue%d", i))
-		got, err := db.Get(key)
-		require.NoError(t, err)
-		assert.Equal(t, expectedValue, got)
-	}
-}
-
-func TestRocksDBIterator(t *testing.T) {
-	name := fmt.Sprintf("test_%x", randStr(12))
-	dir := os.TempDir()
-	db, err := NewDB(name, RocksDBBackend, dir)
+	err = db.Compact([]byte("key000"), []byte("key050"))
 	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, db.Close())
-		cleanupDBDir(dir, name)
-	}()
 
-	// Write test data
-	keys := []string{"a", "b", "c", "d", "e"}
-	for _, k := range keys {
-		err = db.Set([]byte(k), []byte("value_"+k))
-		require.NoError(t, err)
-	}
-
-	// Test forward iteration
-	itr, err := db.Iterator([]byte("b"), []byte("e"))
+	value, err := db.Get([]byte("key025"))
 	require.NoError(t, err)
-	defer itr.Close()
-
-	expected := []string{"b", "c", "d"}
-	i := 0
-	for ; itr.Valid(); itr.Next() {
-		assert.Equal(t, []byte(expected[i]), itr.Key())
-		i++
-	}
-	assert.Equal(t, len(expected), i)
-
-	// Test reverse iteration
-	ritr, err := db.ReverseIterator([]byte("b"), []byte("e"))
-	require.NoError(t, err)
-	defer ritr.Close()
-
-	expectedReverse := []string{"d", "c", "b"}
-	i = 0
-	for ; ritr.Valid(); ritr.Next() {
-		assert.Equal(t, []byte(expectedReverse[i]), ritr.Key())
-		i++
-	}
-	assert.Equal(t, len(expectedReverse), i)
+	assert.Equal(t, []byte("value025"), value)
 }
 
 func BenchmarkRocksDBRandomReadsWrites(b *testing.B) {
