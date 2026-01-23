@@ -163,6 +163,10 @@ func testBackendGetSetDelete(t *testing.T, backend BackendType) {
 	require.NoError(t, err)
 	require.Equal(t, []byte{0x0a}, value)
 
+	value, err = db.Get([]byte("cmp/c"))
+	require.NoError(t, err)
+	require.Equal(t, []byte{0x0c}, value)
+
 	if strings.Contains(string(backend), "pebbledb") {
 		// When running the test the folder can't be cleaned up and there
 		// is a panic on removing the tmp testing directories.
