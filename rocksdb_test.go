@@ -51,7 +51,10 @@ func TestRocksDBDeleteSync(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, RocksDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Set a key
 	key := []byte("testkey")
@@ -83,7 +86,10 @@ func TestRocksDBBatch(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, RocksDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Create a batch
 	batch := db.NewBatch()
@@ -116,7 +122,10 @@ func TestRocksDBIterator(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, RocksDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Write test data
 	keys := []string{"a", "b", "c", "d", "e"}

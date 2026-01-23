@@ -55,7 +55,10 @@ func TestPebbleDBCompact(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, PebbleDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Write some data
 	for i := 0; i < 100; i++ {
@@ -84,7 +87,10 @@ func TestPebbleDBDeleteSync(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, PebbleDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Set a key
 	key := []byte("testkey")
@@ -112,7 +118,10 @@ func TestPebbleDBBatch(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, PebbleDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Create a batch
 	batch := db.NewBatch()
@@ -145,7 +154,10 @@ func TestPebbleDBIterator(t *testing.T) {
 	dir := os.TempDir()
 	db, err := NewDB(name, PebbleDBBackend, dir)
 	require.NoError(t, err)
-	defer cleanupDBDir(dir, name)
+	defer func() {
+		require.NoError(t, db.Close())
+		cleanupDBDir(dir, name)
+	}()
 
 	// Write test data
 	keys := []string{"a", "b", "c", "d", "e"}
