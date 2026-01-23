@@ -17,7 +17,7 @@ var _ DB = (*PrefixDB)(nil)
 // NewPrefixDB lets you namespace multiple DBs within a single DB.
 func NewPrefixDB(db DB, prefix []byte) *PrefixDB {
 	return &PrefixDB{
-		prefix: prefix,
+		prefix: cp(prefix),
 		db:     db,
 	}
 }
@@ -161,10 +161,9 @@ func (pdb *PrefixDB) NewBatch() Batch {
 
 // Close implements DB.
 func (pdb *PrefixDB) Close() error {
-	pdb.mtx.Lock()
-	defer pdb.mtx.Unlock()
-
-	return pdb.db.Close()
+	// PrefixDB doesn't own the underlying database, so Close is a no-op.
+	// The underlying DB should be closed by its owner, not by prefix wrappers.
+	return nil
 }
 
 // Print implements DB.
