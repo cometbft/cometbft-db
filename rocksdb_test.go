@@ -33,4 +33,31 @@ func TestRocksDBStats(t *testing.T) {
 	assert.NotEmpty(t, db.Stats())
 }
 
-// TODO: Add tests for rocksdb
+func TestRocksDBNewRocksDB(t *testing.T) {
+	name := fmt.Sprintf("test_%x", randStr(12))
+	defer cleanupDBDir("", name)
+
+	// Test we can't open the db twice for writing
+	wr1, err := NewRocksDB(name, "")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, wr1.Close())
+	})
+	_, err = NewRocksDB(name, "")
+	require.Error(t, err, "should not be able to open db twice")
+}
+
+func BenchmarkRocksDBRandomReadsWrites(b *testing.B) {
+	name := fmt.Sprintf("test_%x", randStr(12))
+	db, err := NewRocksDB(name, "")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer func() {
+		err = db.Close()
+		require.NoError(b, err)
+		cleanupDBDir("", name)
+	}()
+
+	benchmarkRandomReadsWrites(b, db)
+}

@@ -37,4 +37,16 @@ func BenchmarkPebbleDBRandomReadsWrites(b *testing.B) {
 	benchmarkRandomReadsWrites(b, db)
 }
 
-// TODO: Add tests for pebble
+func TestPebbleDBNewPebbleDB(t *testing.T) {
+	name := fmt.Sprintf("test_%x", randStr(12))
+	defer cleanupDBDir("", name)
+
+	// Test we can't open the db twice for writing
+	wr1, err := NewPebbleDB(name, "")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, wr1.Close())
+	})
+	_, err = NewPebbleDB(name, "")
+	require.Error(t, err, "should not be able to open db twice")
+}
