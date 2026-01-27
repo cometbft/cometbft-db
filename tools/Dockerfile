@@ -13,7 +13,7 @@ RUN \
   wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
-  && DEBUG_LEVEL=0 make -j4 shared_lib \
+  && DEBUG_LEVEL=0 CXXFLAGS="-Wno-maybe-uninitialized" make -j4 shared_lib \
   && make install-shared \
   && ldconfig \
   && cd .. \
