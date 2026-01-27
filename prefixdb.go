@@ -160,7 +160,7 @@ func (pdb *PrefixDB) NewBatch() Batch {
 }
 
 // Close implements DB.
-func (pdb *PrefixDB) Close() error {
+func (_ *PrefixDB) Close() error {
 	// PrefixDB doesn't own the underlying database, so Close is a no-op.
 	// The underlying DB should be closed by its owner, not by prefix wrappers.
 	return nil
