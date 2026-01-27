@@ -137,7 +137,7 @@ func (db *RocksDB) DeleteSync(key []byte) error {
 	}
 	err := db.db.Delete(db.woSync, key)
 	if err != nil {
-		return nil
+		return err
 	}
 	return nil
 }
