@@ -114,7 +114,7 @@ func (db *PebbleDB) Delete(key []byte) error {
 }
 
 // DeleteSync implements DB.
-func (db PebbleDB) DeleteSync(key []byte) error {
+func (db *PebbleDB) DeleteSync(key []byte) error {
 	if len(key) == 0 {
 		return errKeyEmpty
 	}
@@ -153,7 +153,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 }
 
 // Close implements DB.
-func (db PebbleDB) Close() error {
+func (db *PebbleDB) Close() error {
 	db.db.Close()
 	return nil
 }
@@ -400,7 +400,7 @@ func (itr *pebbleDBIterator) Value() []byte {
 }
 
 // Next implements Iterator.
-func (itr pebbleDBIterator) Next() {
+func (itr *pebbleDBIterator) Next() {
 	itr.assertIsValid()
 	if itr.isReverse {
 		itr.source.Prev()
