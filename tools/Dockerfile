@@ -9,11 +9,13 @@ RUN apt update \
 ARG ROCKSDB=9.8.4
 
 # Install RocksDB
+# GCC 12 reports false-positive uninitialized warnings from its AVX-512
+# intrinsic headers while compiling RocksDB's bundled xxHash implementation.
 RUN \
   wget -q https://github.com/facebook/rocksdb/archive/refs/tags/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
   && cd rocksdb-${ROCKSDB} \
-  && DEBUG_LEVEL=0 CXXFLAGS="-Wno-maybe-uninitialized" make -j4 shared_lib \
+  && DEBUG_LEVEL=0 CXXFLAGS="-Wno-maybe-uninitialized -Wno-error=uninitialized" make -j4 shared_lib \
   && make install-shared \
   && ldconfig \
   && cd .. \
