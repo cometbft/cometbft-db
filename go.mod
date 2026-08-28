@@ -3,7 +3,7 @@ module github.com/cometbft/cometbft-db
 go 1.23
 
 require (
-	github.com/cockroachdb/pebble v1.1.4
+	github.com/cockroachdb/pebble/v2 v2.1.7
 	github.com/dgraph-io/badger/v4 v4.5.1
 	github.com/google/btree v1.1.3
 	github.com/jmhodges/levigo v1.0.0
@@ -14,11 +14,18 @@ require (
 )
 
 require (
-	github.com/DataDog/zstd v1.5.6 // indirect
+	github.com/RaduBerinde/axisds v0.1.0 // indirect
+	github.com/RaduBerinde/btreemap v0.0.0-20250419174037-3d62b7205d54 // indirect
+	github.com/cockroachdb/crlib v0.0.0-20241112164430-1264a2edc35b // indirect
+	github.com/cockroachdb/swiss v0.0.0-20260820225851-333444432258 // indirect
+	github.com/minio/minlz v1.0.1-0.20250507153514-87eb42fe8882 // indirect
+)
+
+require (
+	github.com/DataDog/zstd v1.5.7 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cockroachdb/errors v1.11.3 // indirect
-	github.com/cockroachdb/fifo v0.0.0-20240816210425-c5d0cb0b6fc0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20241215232642-bb51bb14a506 // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
@@ -28,7 +35,7 @@ require (
 	github.com/getsentry/sentry-go v0.31.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
+	github.com/golang/snappy v0.0.5-0.20231225225746-43d5d4cd4e0e // indirect
 	github.com/google/flatbuffers v25.1.24+incompatible // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -50,8 +57,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-
 retract (
-		v0.6.5 // Breaking changes were released with the wrong tag (use v0.6.6 or later).
-		[v1.0.2, v1.0.3] // These do not have Docker images due to the broken pipeline.
+	[v1.0.2, v1.0.3] // These do not have Docker images due to the broken pipeline.
+	v0.6.5 // Breaking changes were released with the wrong tag (use v0.6.6 or later).
 )
