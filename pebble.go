@@ -24,6 +24,17 @@ var _ DB = (*PebbleDB)(nil)
 
 func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 	opts := &pebble.Options{}
+	// EnsureDefaults would settle on FormatMostCompatible and leave it there
+	// for the database's whole life, which pebble v2 refuses to open -- and
+	// refuses before it would migrate anything, so no v2 build can do this for
+	// itself. Upgrading here readies a node for that bump instead of failing
+	// to start after it.
+	//
+	// FlushableIngest rather than FormatNewest is exactly what v2 needs: the
+	// next version up holds the open until every table predating the Pebblev1
+	// format has been rewritten, which here is all of them. Stopping short
+	// leaves those to ordinary compaction.
+	opts.FormatMajorVersion = pebble.FormatFlushableIngest
 	opts.EnsureDefaults()
 	return NewPebbleDBWithOpts(name, dir, opts)
 }
