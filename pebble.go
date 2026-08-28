@@ -2,10 +2,12 @@ package db
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 
-	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/v2"
 )
 
 func init() {
@@ -28,12 +30,43 @@ func NewPebbleDB(name string, dir string) (*PebbleDB, error) {
 	return NewPebbleDBWithOpts(name, dir, opts)
 }
 
+// withUpgradeHint says what to do about a database this build will not open.
+//
+// pebble's own report is accurate and useless in the same breath: it names the
+// format and says it is no longer supported, and stops there. The way out is
+// not something an operator can work out from that, because the obvious move
+// -- run the new build and let it migrate -- is the one thing that cannot
+// work. The version is rejected before any migration would run, so nothing on
+// this side of the upgrade can repair it. Only the release before this one
+// can, and it does so just by being started.
+//
+// These stores are opened before the application's, so this is the message a
+// node that upgraded out of order stops on, whatever the app database says.
+//
+// Matched on the text because pebble raises it with errors.Newf, with no
+// sentinel to compare against. Both wordings it uses carry these two phrases;
+// missing the match costs the hint, not the error.
+func withUpgradeHint(err error) error {
+	msg := err.Error()
+	if !strings.Contains(msg, "format major version") ||
+		!strings.Contains(msg, "no longer supported") {
+		return err
+	}
+	return fmt.Errorf("%w"+
+		"\n\nthis database predates the pebble format this build requires, and"+
+		"\nthis build cannot upgrade it: the version is refused before any"+
+		"\nmigration would run. Start the node once on the previous release,"+
+		"\nwhich moves the format forward as it opens, then return to this one."+
+		"\nNothing has been changed on disk -- pebble stops before it writes.",
+		err)
+}
+
 func NewPebbleDBWithOpts(name string, dir string, opts *pebble.Options) (*PebbleDB, error) {
 	dbPath := filepath.Join(dir, name+".db")
 	opts.EnsureDefaults()
 	p, err := pebble.Open(dbPath, opts)
 	if err != nil {
-		return nil, err
+		return nil, withUpgradeHint(err)
 	}
 	return &PebbleDB{
 		db: p,
@@ -131,7 +164,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 	// In case the start and end keys are the same
 	// pebbleDB will throw an error that it cannot compact.
 	if start != nil && end != nil {
-		return db.db.Compact(start, end, true)
+		return db.db.Compact(context.Background(), start, end, true)
 	}
 	iter, err := db.db.NewIter(nil)
 	if err != nil {
@@ -149,7 +182,7 @@ func (db *PebbleDB) Compact(start, end []byte) (err error) {
 	if end == nil && iter.Last() {
 		end = append(end, iter.Key()...)
 	}
-	return db.db.Compact(start, end, true)
+	return db.db.Compact(context.Background(), start, end, true)
 }
 
 // Close implements DB.
